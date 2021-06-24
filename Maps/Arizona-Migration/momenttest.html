@@ -1,0 +1,24 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>Arizona Migrant Deaths</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<script src="dep/moment.js"></script>
+</head>
+
+<body>
+  <script>
+  //var a = moment().diff('1990-02-01','months')
+  //console.log(a)
+  function decayfunc(xint,yint,x){
+    return yint*(1-Math.pow((x/xint),6))
+  }
+  let duration = 15
+  for(var i = 1; i <  duration; i++) {
+    console.log(decayfunc(duration,15,i));
+  };
+
+  </script>
+</body>
+
+</html>

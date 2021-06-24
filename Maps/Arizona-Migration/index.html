@@ -6,47 +6,31 @@
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.js"></script>
+<script src="dep/moment.js"></script>
+<script src="pulsingdot.js"></script>
 <style>
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+.session {position: absolute; top: 0; bottom: 0; height:200px; width: 1000px; z-index:10000}
 </style>
 </head>
 <body>
-<div id="map"></div>
- 
-<script>
-	mapboxgl.accessToken = 'pk.eyJ1Ijoia2F6dXRvbiIsImEiOiJja3Bhd2RpMGQwdDE1MnFvMXJwbmhnMmoxIn0.elQ7_sz1l4YQk3KVYjJz9Q';
 
-var map = new mapboxgl.Map({
-container: 'map',
-zoom: 6.73,
-center: [-111.332,32.948,],
-pitch: 40,
-bearing: 0,
-style: 'mapbox://styles/kazuton/ckq0jillz0etp17o03c6k03d0'
-});
- 
-map.on('load', function () {
-	map.addSource('migrantdeaths', {
-		type: 'geojson',
-		// Use a URL for the value for the `data` property.
-		data: "./arizona.geojson"
-	});
- 
-	map.addLayer({
-		'id': 'migrant-deaths',
-		'type': 'circle',
-		'source': 'migrantdeaths',
-		'paint': {
-			'circle-radius': 8,
-			'circle-stroke-width': 2,
-			'circle-color': 'red',
-			'circle-stroke-color': 'white'
-		}
-	});
-});
+
+
+
+<div class='session' id='sliderbar'>
+  <h2>Year: <label id='date'></label></h2>
+  <input id='slider' class='row' type='range' min='0' max='1' step='1' value='0' />
+</div>
+
+<div id="map"></div>
+
+<script>
+
+
 
 </script>
- 
+<script src="test.js"></script>
 </body>
 </html>
