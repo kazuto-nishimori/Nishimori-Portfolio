@@ -46,7 +46,7 @@ let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
 		'id': 'names-of-diseased',
     'source': 'migrantdeaths',
 		'type': 'symbol',
-    'layout': {'text-field': "{NameAge}",'text-font': labelfont, 'text-anchor':'bottom','text-allow-overlap': true},
+    'layout': {'text-field': "{NameAge}",'text-font': labelfont, 'text-anchor':'bottom','text-allow-overlap': false},
     'paint':{'text-color':'#B04141'}
     //'type':'symbol', 'layout': {'icon-image': 'pulsing-dot', 'icon-allow-overlap': true}
     //, filter: ["in", "2020",['get', "Reporting Date"]]
