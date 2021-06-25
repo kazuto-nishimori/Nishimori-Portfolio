@@ -8,15 +8,27 @@
 
 <body>
   <script>
-  //var a = moment().diff('1990-02-01','months')
-  //console.log(a)
   function decayfunc(xint,yint,x){
-    return yint*(1-Math.pow((x/xint),6))
-  }
-  let duration = 15
-  for(var i = 1; i <  duration; i++) {
-    console.log(decayfunc(duration,15,i));
+    return yint*(1-Math.pow((x/xint),4))
   };
+
+  function retrievedate(months){
+    let mon = 1+(months)%12;
+    let year = (months-mon+1)/12;
+    return year.toString()+'-'+mon.toString().padStart(2,'0');
+  };
+  monthmin = 1980*12
+  timefilteredto = 24240
+  duration = 12
+  let filter = ['case']
+  for(var i = 1; i <  duration; i++) {
+    filter.push(["in",retrievedate(timefilteredto - i),['get',"Reporting Date"]]);
+    filter.push(decayfunc(duration,1,i));
+  };
+  filter.push(1)
+
+  //filter.push(filtercondition);
+  console.log(filter)
 
   </script>
 </body>

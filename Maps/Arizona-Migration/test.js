@@ -69,6 +69,15 @@ let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
     return filter
   };
 
+  function makelabelfilter(timefilteredto, duration){
+    var filter = ['any'];
+    for (var i = 1; i < duration; i++){
+      var filtercondition = ["in",retrievedate(timefilteredto+1-i),['get', "Reporting Date"]]
+      filter.push(filtercondition)
+    }
+    return filter
+  };
+
   function decayfunc(xint,yint,x){
     return yint*(1-Math.pow((x/xint),4))
   };
@@ -90,24 +99,39 @@ let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
       };
       filter.push(0)
     };
+    if(option == 'color'){
+      var targetr = 248
+      var targetg = 87
+      var targetb = 253
+      for(var i = 0; i <  (duration-1); i++) {
+        filter.push(["in",retrievedate(timefilteredto - i),['get',"Reporting Date"]]);
+        let r = Math.floor(255 + (targetr-255)*(i/(duration-1)))
+        let g = Math.floor(255 + (targetg-255)*(i/(duration-1)))
+        let b = Math.floor(255 + (targetb-255)*(i/(duration-1)))
+        filter.push(("rgb(").concat(r.toString(),",",g.toString(),",", b.toString(), ")"))
+      };
+      filter.push(("rgb(").concat(targetr.toString(),",",targetg.toString(),",", targetb.toString(), ")"))
+    };
     return filter
   }
 
   setInterval(function(){
+    var duration = 12
     if (timefilteredto < monthmax){
       timefilteredto += 1
       document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('MMM, YYYY');
       map.setFilter('death-circle',makefilter(timefilteredto));
-      map.setFilter('names-of-diseased',makefilter(timefilteredto));
-      map.setLayoutProperty(
-        'names-of-diseased',
-        'text-size',
-        makepaintfilter(timefilteredto, 'radius', 12)
+      map.setFilter('names-of-diseased',makelabelfilter(timefilteredto,duration));
+      map.setPaintProperty(
+        'death-circle',
+        'circle-color',
+        makepaintfilter(timefilteredto, 'color', duration)
       );
+
       map.setPaintProperty(
         'names-of-diseased',
         'text-opacity',
-        makepaintfilter(timefilteredto, 'opacity', 12)
+        makepaintfilter(timefilteredto, 'opacity', duration)
       );
       };
   },150);
