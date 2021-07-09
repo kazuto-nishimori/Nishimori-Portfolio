@@ -53,6 +53,18 @@ function makedurationfilter(timefilteredto, duration){
   return filter
 };
 
+function makeborderfilter(timefilteredto){
+  var filter = ['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]]]
+  let opacity = 0
+  if (timefilteredto > 2008*12){
+    opacity = Math.min((timefilteredto-2008*12)/12,1)
+  }
+  filter.push(opacity)
+  filter.push(0)
+  return filter
+  console.log(filter)
+};
+
 function makepaintfilter(timefilteredto, option, duration){ // returns JSON paint filter. Duration is for any decay, change
   let filter = ['case'];
   if(option == 'opacity'){      //filter for opacity decay
@@ -121,6 +133,11 @@ function updatemap(timefilteredto){
     'heatmap-weight',
     makepaintfilter(timefilteredto, 'heatmap', 24)
   );
+  map.setPaintProperty(
+    'border',
+    'line-opacity',
+     makeborderfilter(timefilteredto)
+  );
 }
 
 
@@ -134,6 +151,11 @@ center: [-111.332,32.948,],
 pitch: 40,
 bearing: 0,
 style: 'mapbox://styles/kazuton/ckq0jillz0etp17o03c6k03d0'
+});
+
+map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Triangle_Orange.svg/240px-Triangle_Orange.svg.png', function(error, image) {
+if (error) throw error;
+if (!map.hasImage('vehicularwall')) map.addImage('vehicularwall', image);
 });
 
 
@@ -163,8 +185,27 @@ map.on('load', function () {
 		'id': 'arizonaroads',
     'source': 'roads',
 		'type': 'line','paint': {'line-width' : 2, 'line-opacity':0.7, 'line-color':"white"}
-    //'type':'symbol', 'layout': {'icon-image': 'pulsing-dot', 'icon-allow-overlap': true}
-    //, filter: ["in", "2020",['get', "Reporting Date"]]
+	});
+
+  map.addSource('borderwall', {
+		type: 'geojson',
+		// Use a URL for the value for the `data` property.
+		data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/Border.geojson"
+	});
+
+  map.addLayer({
+		'id': 'border',
+    'source': 'borderwall',
+		'type': 'line',
+    'paint': {
+      'line-width' : 10,
+      //'line-opacity':1,
+      //'line-color':'red',
+      //'line-opacity':['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]],0.5,0.1]
+      //'line-pattern':'vehicularwall'
+      //'line-dasharray': [2, 1],
+      'line-color':["case", ["in",'vehicle',["get","gen_type"]],'orange',["in",'pedestrian',["get","gen_type"]],'red','black']
+    }
 	});
 
 let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
