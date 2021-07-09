@@ -2,7 +2,7 @@
 //inquire at kazuto.nishimori@gmail.com
 //some code borrowed from https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
 
-var monthmin = 1990*12; //date in numeric form, converted to number of months after year 0
+var monthmin = 2000*12; //date in numeric form, converted to number of months after year 0
 var monthmax = 2020*12+5;
 var mySlider = document.getElementById('slider');
 mySlider.min = monthmin;
@@ -150,6 +150,19 @@ map.on('load', function () {
     'source': 'migrantdeaths',
     'filter': ['all',['has', 'Post Mortem Interval'],['!',["in",'6-8 months',['get','Post Mortem Interval']]]],
 		'type': 'circle','paint': {'circle-radius' : {"stops": [[0, 0],[8, 0],[10, 2],[16, 5]]}, 'circle-opacity':0.7}
+    //'type':'symbol', 'layout': {'icon-image': 'pulsing-dot', 'icon-allow-overlap': true}
+    //, filter: ["in", "2020",['get', "Reporting Date"]]
+	});
+  map.addSource('roads', {
+		type: 'geojson',
+		// Use a URL for the value for the `data` property.
+		data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/roads.geojson"
+	});
+
+  map.addLayer({
+		'id': 'arizonaroads',
+    'source': 'roads',
+		'type': 'line','paint': {'line-width' : 2, 'line-opacity':0.7, 'line-color':"white"}
     //'type':'symbol', 'layout': {'icon-image': 'pulsing-dot', 'icon-allow-overlap': true}
     //, filter: ["in", "2020",['get', "Reporting Date"]]
 	});
