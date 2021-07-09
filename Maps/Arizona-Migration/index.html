@@ -10,8 +10,13 @@
 <script src="pulsingdot.js"></script>
 <style>
 body { margin: 0; padding: 0; overflow: hidden;}
+h2{
+  color: #ffffff;
+  font-family: sans-serif;
+}
 #map { position: absolute; top: 0; bottom: 0; width: 100%; overflow: hidden; }
 .session {position: absolute; bottom: 0; left: 0; height:100px; width: 100%; z-index:10000}
+.datediv {position: absolute; top: 0; left: 0; height:100px; z-index:10000}
 
 
 #menu {
@@ -58,12 +63,12 @@ background: #3074a4;
 </style>
 </head>
 <body>
-
+<div class='datediv'>
+<h2><label id='date'></label></h2></div>
 
 
 
 <div class='session' id='sliderbar'>
-  <h2>Year: <label id='date'></label></h2>
     <input id='slider' type='range' min='0' max='1' step='1' value='0' style="width:80%"/>
 </div>
 <nav id="menu"></nav>

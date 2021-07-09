@@ -9,7 +9,7 @@ mySlider.min = monthmin;
 mySlider.value = monthmin;
 mySlider.max = monthmax;
 var timefilteredto = monthmin; //the date (numeric) upto which the data is filtered
-document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('MMM, YYYY');
+document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('YYYY MMM');
 
 var initseqdone = new Boolean("false")
 mySlider.style.display = 'none'
@@ -55,14 +55,21 @@ function makedurationfilter(timefilteredto, duration){
 
 function makeborderfilter(timefilteredto){
   var filter = ['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]]]
-  let opacity = 0
-  if (timefilteredto > 2008*12){
-    opacity = Math.min((timefilteredto-2008*12)/12,1)
-  }
-  filter.push(opacity)
+  filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1))
   filter.push(0)
   return filter
   console.log(filter)
+};
+
+function makeBPSfilter(timefilteredto){
+  var filter = ['case',["in",'legacy',["get","Built"]],1]
+  const constructionyears = [2007,2009,2011,2012]
+  constructionyears.forEach(function (item, index) {
+    filter.push(["in",item.toString(),["get","Built"]])
+    filter.push(Math.min((Math.max(timefilteredto,(item-1)*12)-(item-1)*12)/12,1))
+  });
+  filter.push(0)
+  return filter
 };
 
 function makepaintfilter(timefilteredto, option, duration){ // returns JSON paint filter. Duration is for any decay, change
@@ -119,7 +126,7 @@ function makepaintfilter(timefilteredto, option, duration){ // returns JSON pain
 };
 
 function updatemap(timefilteredto){
-  document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('MMM, YYYY');
+  document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('YYYY, MMM');
   map.setFilter('death-circle',makefilter(timefilteredto));
   map.setFilter('death-heatmap',makedurationfilter(timefilteredto, 24));
   map.setPaintProperty(
@@ -138,6 +145,12 @@ function updatemap(timefilteredto){
     'line-opacity',
      makeborderfilter(timefilteredto)
   );
+  map.setPaintProperty(
+    'bpstation',
+    'icon-opacity',
+     makeBPSfilter(timefilteredto)
+  );
+
 }
 
 
@@ -153,9 +166,9 @@ bearing: 0,
 style: 'mapbox://styles/kazuton/ckq0jillz0etp17o03c6k03d0'
 });
 
-map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Triangle_Orange.svg/240px-Triangle_Orange.svg.png', function(error, image) {
+map.loadImage('BPS.png', function(error, image) {
 if (error) throw error;
-if (!map.hasImage('vehicularwall')) map.addImage('vehicularwall', image);
+if (!map.hasImage('BPS')) map.addImage('BPS', image);
 });
 
 
@@ -180,17 +193,19 @@ map.on('load', function () {
 		// Use a URL for the value for the `data` property.
 		data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/roads.geojson"
 	});
+  map.addSource('borderwall', {
+    type: 'geojson',
+    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/Border.geojson"
+  });
+  map.addSource('borderpatrol', {
+    type: 'geojson',
+    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BorderPatrol.geojson"
+  });
 
   map.addLayer({
 		'id': 'arizonaroads',
     'source': 'roads',
-		'type': 'line','paint': {'line-width' : 2, 'line-opacity':0.7, 'line-color':"white"}
-	});
-
-  map.addSource('borderwall', {
-		type: 'geojson',
-		// Use a URL for the value for the `data` property.
-		data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/Border.geojson"
+		'type': 'line','paint': {'line-width' : 1, 'line-opacity':0.7, 'line-color':"#8bb259"}
 	});
 
   map.addLayer({
@@ -198,15 +213,32 @@ map.on('load', function () {
     'source': 'borderwall',
 		'type': 'line',
     'paint': {
-      'line-width' : 10,
+      'line-width' : ["case", ["in",'vehicle',["get","gen_type"]],5,["in",'pedestrian',["get","gen_type"]],10,0],
       //'line-opacity':1,
       //'line-color':'red',
       //'line-opacity':['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]],0.5,0.1]
       //'line-pattern':'vehicularwall'
       //'line-dasharray': [2, 1],
-      'line-color':["case", ["in",'vehicle',["get","gen_type"]],'orange',["in",'pedestrian',["get","gen_type"]],'red','black']
+      'line-color':["case", ["in",'vehicle',["get","gen_type"]],'#B34529',["in",'pedestrian',["get","gen_type"]],'#661F0D','black']
     }
 	});
+
+  map.addLayer({
+    'id': 'bpstation',
+    'source': 'borderpatrol',
+    'type': 'symbol',
+    'layout': {
+      'icon-image': 'BPS',
+      'icon-size': 0.1,
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+    }
+  });
+  map.setPaintProperty(
+    'bpstation',
+    'icon-opacity',
+     makeBPSfilter(timefilteredto)
+  );
 
 let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
   map.addLayer({
@@ -238,11 +270,8 @@ let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
       // to create a blur-like effect.
       'heatmap-color': ['interpolate',['linear'],['heatmap-density'],
         0,'rgba(33,102,172,0)',
-        0.2,'rgb(103,169,207)',
-        0.4,'rgb(209,229,240)',
-        0.6,'rgb(253,219,199)',
-        0.8,'rgb(239,138,98)',
-        1,'rgb(178,24,43)'],
+        0.1,'rgba(0, 57, 115,0.2)',
+        1,'rgba(229, 229, 190,1)'],
       'heatmap-radius': {"base": 2,"stops": [[4,4],[13,1024]]},  // Adjust the heatmap radius by zoom level
       'heatmap-opacity': ['interpolate',['linear'],['zoom'],7,1,13,0] // Transition from heatmap to circle layer by zoom level
     }//map.setPaintProperty('death-heatmap','heatmap-radius',{"base": 2,"stops": [[4,2],[13,512]]})
@@ -262,7 +291,7 @@ let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
         mySlider.value = monthmax
         map.setLayoutProperty('Names of Victims','visibility','visible');
       };
-    },10);
+    },100);
 });
 
 map.on('idle', function () {
