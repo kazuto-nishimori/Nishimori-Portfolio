@@ -4,10 +4,99 @@
 <title>Arizona Migrant Deaths</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <script src="dep/moment.js"></script>
+<link href="https://refreshless.com/nouislider/distribute/nouislider.css?v=1410" rel="stylesheet">
+<script src="https://refreshless.com/nouislider/distribute/nouislider.js?v=1410"></script>
 </head>
 
 <body>
+<style>
+body{
+  background-image:url("throwaway.png");
+}
+.slidercontainter {position: absolute; bottom: 0; left: 0; height:100px; width: 100%; z-index:10000;justify-content: center; display: flex}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Open Sans Light'), local('OpenSans-Light'), url(https://fonts.gstatic.com/s/opensans/v13/DXI1ORHCpsQm3Vp6mXoaTXhCUOGz7vYGh680lGh-uXM.woff) format('woff');
+}
+.noUi-connect {background-color:#314685}
+.noUi-target {border:#ffffff}
+.noUi-value-large {color:white; font-family:'Open Sans'; font-size:24;line-height: 25px}
+.noUi-marker, .noUi-marker-horizontal, .noUi-marker-large{background-color:white}
+
+.legendblur{
+			width:200px;
+			height:210px;
+		    position: fixed;
+		  	right: 50;
+		  	bottom: 50px;
+		  	padding-bottom: 50px;
+			backdrop-filter: blur(5px);
+			box-shadow:
+  			0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+  			0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+  			0 12.5px 10px rgba(0, 0, 0, 0.06),
+  			0 22.3px 17.9px rgba(0, 0, 0, 0.072),
+  			0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+  			0 100px 80px rgba(0, 0, 0, 0.12)
+;
+		}
+</style>
+<div class = "legendblur"></div>
+
+
+<div class='slidercontainter'>
+    <div id='slider' style="width:50%;" > </div>
+</div>
+
+
+
+
+
+
+
   <script>
+  var mySlider = document.getElementById('slider');
+
+  var monthmin = 2000*12; //date in numeric form, converted to number of months after year 0
+  var monthmax = 2020*12+5;
+
+  function positions() {
+      let filter = [0]
+      let percentinc = 5*12/(monthmax-monthmin)*100
+      for (i=1; i<=Math.floor(100/percentinc); i++){
+        filter.push(percentinc*i)
+      }
+      return filter
+  }
+
+  noUiSlider.create(mySlider, {
+      start: 20,
+      connect: 'lower',
+      steps:1,
+      range: {
+          'min': monthmin,
+          'max': monthmax
+      },
+      pips: {
+        mode: 'positions',
+        values: positions(),
+        density: 12/(monthmax-monthmin)*100,
+        format: {
+        // 'to' the formatted value. Receives a number.
+        to: function (value) {
+            return value/12;
+        },
+        // 'from' the formatted value.
+        // Receives a string, should return a number.
+        from: function (value) {
+            return value*12;
+        },
+      }
+    }
+  });
+
   function decayfunc(xint,yint,x){
     return yint*(1-Math.pow((x/xint),4))
   };
@@ -29,6 +118,12 @@ console.log(result)
   }
 
   </script>
+
+
+
+
+
+
 </body>
 
 </html>

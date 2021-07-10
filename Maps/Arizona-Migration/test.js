@@ -2,34 +2,48 @@
 //inquire at kazuto.nishimori@gmail.com
 //some code borrowed from https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
 
-var monthmin = 2000*12; //date in numeric form, converted to number of months after year 0
-var monthmax = 2020*12+5;
-var mySlider = document.getElementById('slider');
-mySlider.min = monthmin;
-mySlider.value = monthmin;
-mySlider.max = monthmax;
+//var monthmin = 2000*12; //date in numeric form, converted to number of months after year 0
+//var monthmax = 2020*12+5;
+//var mySlider = document.getElementById('slider');
+//mySlider.min = monthmin;
+//mySlider.value = monthmin;
+//mySlider.max = monthmax;
 var timefilteredto = monthmin; //the date (numeric) upto which the data is filtered
 document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('YYYY MMM');
 
 var initseqdone = new Boolean("false")
 mySlider.style.display = 'none'
-
 const datecolumn = "Reporting Date"
 
-function retrievedate(months){ // convert numeric date to the form "1980-02"
+const vehiclularheight = 1000
+const pedestrianheight = 5000
+const vehicularcolor = '#D17058'
+const pedestriancolor = '#D14926'
+const wallopacity = 0.7
+
+
+
+
+//########## Utility functions ##########
+// convert numeric date to the form "1980-02"
+function retrievedate(months){
   let mon = 1+(months)%12;
   let year = (months-mon+1)/12;
   return year.toString()+'-'+mon.toString().padStart(2,'0');
 };
-
-function decayfunc(xint,yint,x){ // a quadratic decay function from (0,yint) to (xint,0). Returns y
+// a quadratic decay function from (0,yint) to (xint,0). Returns y
+function decayfunc(xint,yint,x){
   return yint*(1-Math.pow((x/xint),2))
 };
-function linfunc(xint,yint,x){ // lin function from (0,yint) to (xint,0). Returns y
+// lin function from (0,yint) to (xint,0). Returns y
+function linfunc(xint,yint,x){
   return (-yint/xint)*x + yint
 };
 
-function makefilter(timefilteredto){ // returns JSON filter for data with time stamps before timefilteredto inclusive
+
+//########## Filter functions ##########
+// returns JSON filter all data on or before 'timefilteredto'
+function makefilter(timefilteredto){
   var filter = ['any'];
   let month = timefilteredto%12
   let year = (timefilteredto-month)/12;                // e.g. if filter is filtering up to Feb, 1983, then
@@ -43,7 +57,7 @@ function makefilter(timefilteredto){ // returns JSON filter for data with time s
   };
   return filter
 };
-
+//returns JSON filter for data found within 'duration'time from 'timefilteredto'
 function makedurationfilter(timefilteredto, duration){
   var filter = ['any'];
   for (var i = 0; i < duration; i++){
@@ -52,40 +66,23 @@ function makedurationfilter(timefilteredto, duration){
   }
   return filter
 };
-
-function makeborderfilter(timefilteredto){
+//Opacity filter for border file
+/*function makeborderfilter(timefilteredto){
   var filter = ['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]]]
   filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1))
   filter.push(0)
   return filter
-  console.log(filter)
-};
-
+};*/
+// Returns border wall height
 function bordergrow(timefilteredto){
-  let maxheight=5000
-  var filter = ['case',["in",'legacy',["get","project"]],maxheight,["!",["in",'legacy',["get","project"]]]]
-  if(timefilteredto>2007*12){
-    filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1)*maxheight)
-  }else{
-    filter.push(-1000)
-  }
+  var filter = ["case", ["in",'vehicle',["get","gen_type"]]]
+  filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1)*vehiclularheight)
+  filter.push(["in",'pedestrian',["get","gen_type"]])
+  filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1)*pedestrianheight)
   filter.push(0)
   return filter
-  console.log(filter)
 };
-
-function bordershow(timefilteredto){
-  var filter = ['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]]]
-  if(timefilteredto>2007*12){
-    filter.push(1)
-  }else{
-    filter.push(0)
-  }
-  filter.push(0)
-  return filter
-}
-
-
+// Filters Border Patrol Stations
 function makeBPSfilter(timefilteredto){
   var filter = ['case',["in",'legacy',["get","Built"]],1]
   const constructionyears = [2007,2009,2011,2012]
@@ -96,8 +93,8 @@ function makeBPSfilter(timefilteredto){
   filter.push(0)
   return filter
 };
-
-function makepaintfilter(timefilteredto, option, duration){ // returns JSON paint filter. Duration is for any decay, change
+// returns JSON paint filter. Duration is for any decay, change
+function makepaintfilter(timefilteredto, option, duration){
   let filter = ['case'];
   if(option == 'opacity'){      //filter for opacity decay
     for(var i = 0; i <  duration; i++) {
@@ -115,7 +112,7 @@ function makepaintfilter(timefilteredto, option, duration){ // returns JSON pain
     filter.push(0)
   };
   if(option == 'radius'){         //filter for circle radius decay
-    let initialr = 10
+    let initialr = 8
     let finalr = 2
     for(var i = 0; i <  duration; i++) {
       filter.push(["in",retrievedate(timefilteredto - i),['get',datecolumn]]);
@@ -150,14 +147,17 @@ function makepaintfilter(timefilteredto, option, duration){ // returns JSON pain
   return filter
 };
 
+
+//########## Map Update Function ##########
+//Runs after every iteration of timefilteredto
 function updatemap(timefilteredto){
   document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('YYYY, MMM');
   map.setFilter('death-circle',makefilter(timefilteredto));
   map.setFilter('death-heatmap',makedurationfilter(timefilteredto, 24));
   map.setPaintProperty(
     'death-circle',
-    'circle-color',
-    makepaintfilter(timefilteredto, 'color', 24)
+    'circle-radius',
+    makepaintfilter(timefilteredto, 'radius', 24)
   );
   // map.setPaintProperty('death-circle','circle-radius',makepaintfilter(timefilteredto, 'radius', 12));
   map.setPaintProperty(
@@ -165,8 +165,21 @@ function updatemap(timefilteredto){
     'heatmap-weight',
     makepaintfilter(timefilteredto, 'heatmap', 24)
   );
+  if(timefilteredto>2007*12){
+    map.setLayoutProperty(
+      'newwalls',
+      'visibility',
+       'visible'
+    );
+  }else{
+    map.setLayoutProperty(
+      'newwalls',
+      'visibility',
+       'none'
+    );
+  }
   map.setPaintProperty(
-    'wall-poly',
+    'newwalls',
     'fill-extrusion-height',
      bordergrow(timefilteredto)
   );
@@ -191,7 +204,9 @@ bearing: 0,
 style: 'mapbox://styles/kazuton/ckq0jillz0etp17o03c6k03d0'
 });
 
-map.loadImage('https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BPS.png', function(error, image) {
+//Border Patrol Station Icon
+//map.loadImage('https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BPS.png', function(error, image) {
+map.loadImage('BPS.png', function(error, image) {
 if (error) throw error;
 if (!map.hasImage('BPS')) map.addImage('BPS', image);
 });
@@ -204,12 +219,16 @@ map.on('load', function () {
 		// Use a URL for the value for the `data` property.
 		data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/arizona.geojson"
 	});
-
+  // Dot representing each victim
 	map.addLayer({
 		'id': 'death-circle',
     'source': 'migrantdeaths',
     'filter': ['all',['has', 'Post Mortem Interval'],['!',["in",'6-8 months',['get','Post Mortem Interval']]]],
-		'type': 'circle','paint': {'circle-radius' : {"stops": [[0, 0],[8, 0],[10, 2],[16, 5]]}, 'circle-opacity':0.7}
+		'type': 'circle',
+    'paint': {
+      //'circle-radius' : {"stops": [[0, 0],[8, 0],[10, 2],[16, 5]]},
+      'circle-opacity':{"stops": [[0, 0],[10, 0],[11, 0.5],[13, 1]]},
+      'circle-color':"white"}
     //'type':'symbol', 'layout': {'icon-image': 'pulsing-dot', 'icon-allow-overlap': true}
     //, filter: ["in", "2020",['get', "Reporting Date"]]
 	});
@@ -226,9 +245,13 @@ map.on('load', function () {
     type: 'geojson',
     data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BorderPatrol.geojson"
   });
-  map.addSource('borderwallpoly', {
+  map.addSource('legacywall', {
     type: 'geojson',
-    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/wall-poly.geojson"
+    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/legacywalls.geojson"
+  });
+  map.addSource('newwall', {
+    type: 'geojson',
+    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/newwalls.geojson"
   });
 
   map.addLayer({
@@ -263,16 +286,24 @@ map.on('load', function () {
     'icon-opacity',
      makeBPSfilter(timefilteredto)
   );
+
   map.addLayer({
-    'id': 'wall-poly',
-    'source': 'borderwallpoly',
+    'id': 'newwalls',
+    'source': 'newwall',
     'type': 'fill-extrusion',
     'paint': {
-      'fill-extrusion-base':0,
-      'fill-extrusion-height':5000,
-      //'fill-extrusion-opacity':1,
-      'fill-extrusion-color':["case", ["in",'vehicle',["get","gen_type"]],'#B34529',["in",'pedestrian',["get","gen_type"]],'#661F0D','black'],
-
+      'fill-extrusion-opacity':wallopacity,
+      'fill-extrusion-color':["case", ["in",'vehicle',["get","gen_type"]],vehicularcolor,["in",'pedestrian',["get","gen_type"]],pedestriancolor,'black'],
+    }
+  });
+  map.addLayer({
+    'id': 'legacywalls',
+    'source': 'legacywall',
+    'type': 'fill-extrusion',
+    'paint': {
+      'fill-extrusion-opacity':wallopacity,
+      'fill-extrusion-height': ["case", ["in",'vehicle',["get","gen_type"]],vehiclularheight,["in",'pedestrian',["get","gen_type"]],pedestrianheight,0],
+      'fill-extrusion-color': ["case", ["in",'vehicle',["get","gen_type"]],vehicularcolor,["in",'pedestrian',["get","gen_type"]],pedestriancolor,'black'],
     }
   });
 
@@ -287,7 +318,7 @@ let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
       'text-font': labelfont,
       'text-anchor':'bottom',
       'text-allow-overlap': false,
-      "text-size": {"stops": [[0, 0],[8, 0],[10, 10],[16, 20]]}},
+      "text-size": {"stops": [[0, 0],[8, 0],[11.99,0],[12, 10],[16, 20]]}},
     'paint':{'text-color':'white','text-opacity':0.7}
     //'type':'symbol', 'layout': {'icon-image': 'pulsing-dot', 'icon-allow-overlap': true}
     //, filter: ["in", "2020",['get', "Reporting Date"]]
@@ -305,8 +336,8 @@ let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
       // Begin color ramp at 0-stop with a 0-transparancy color
       // to create a blur-like effect.
       'heatmap-color': ['interpolate',['linear'],['heatmap-density'],
-        0,'rgba(33,102,172,0)',
-        0.1,'rgba(0, 57, 115,0.2)',
+        0,'rgba(0, 57, 115,0)',
+        0.1,'rgba(3, 85, 168,0.3)',
         1,'rgba(229, 229, 190,1)'],
       'heatmap-radius': {"base": 2,"stops": [[4,4],[13,1024]]},  // Adjust the heatmap radius by zoom level
       'heatmap-opacity': ['interpolate',['linear'],['zoom'],7,1,13,0] // Transition from heatmap to circle layer by zoom level
@@ -324,16 +355,16 @@ let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
         initseqdone = true
         mySlider.style.display = 'block'
         clearInterval(initseqid)
-        mySlider.value = monthmax
+        mySlider.noUiSlider.set(monthmax)
         map.setLayoutProperty('Names of Victims','visibility','visible');
       };
-    },100);
+    },10);
 });
 
 map.on('idle', function () {
   if (initseqdone = true){
-    mySlider.addEventListener('input', function (e) {
-      timefilteredto = parseInt(mySlider.value)
+    mySlider.noUiSlider.on('update', function (e) {
+      timefilteredto = parseInt(mySlider.noUiSlider.get())
       updatemap(timefilteredto);
       map.setFilter('Names of Victims',makefilter(timefilteredto));
     });
