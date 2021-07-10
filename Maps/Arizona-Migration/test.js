@@ -166,7 +166,7 @@ bearing: 0,
 style: 'mapbox://styles/kazuton/ckq0jillz0etp17o03c6k03d0'
 });
 
-map.loadImage('BPS.png', function(error, image) {
+map.loadImage('https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BPS.png', function(error, image) {
 if (error) throw error;
 if (!map.hasImage('BPS')) map.addImage('BPS', image);
 });
@@ -229,7 +229,7 @@ map.on('load', function () {
     'type': 'symbol',
     'layout': {
       'icon-image': 'BPS',
-      'icon-size': 0.1,
+      'icon-size': 0.03,
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
     }
