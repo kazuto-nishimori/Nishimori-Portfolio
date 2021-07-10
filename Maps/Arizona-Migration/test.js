@@ -205,8 +205,8 @@ style: 'mapbox://styles/kazuton/ckq0jillz0etp17o03c6k03d0'
 });
 
 //Border Patrol Station Icon
-//map.loadImage('https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BPS.png', function(error, image) {
-map.loadImage('BPS.png', function(error, image) {
+map.loadImage('https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BPS2.png', function(error, image) {
+//map.loadImage('BPS.png', function(error, image) {
 if (error) throw error;
 if (!map.hasImage('BPS')) map.addImage('BPS', image);
 });
