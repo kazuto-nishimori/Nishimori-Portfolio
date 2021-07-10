@@ -61,6 +61,31 @@ function makeborderfilter(timefilteredto){
   console.log(filter)
 };
 
+function bordergrow(timefilteredto){
+  let maxheight=5000
+  var filter = ['case',["in",'legacy',["get","project"]],maxheight,["!",["in",'legacy',["get","project"]]]]
+  if(timefilteredto>2007*12){
+    filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1)*maxheight)
+  }else{
+    filter.push(-1000)
+  }
+  filter.push(0)
+  return filter
+  console.log(filter)
+};
+
+function bordershow(timefilteredto){
+  var filter = ['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]]]
+  if(timefilteredto>2007*12){
+    filter.push(1)
+  }else{
+    filter.push(0)
+  }
+  filter.push(0)
+  return filter
+}
+
+
 function makeBPSfilter(timefilteredto){
   var filter = ['case',["in",'legacy',["get","Built"]],1]
   const constructionyears = [2007,2009,2011,2012]
@@ -141,9 +166,9 @@ function updatemap(timefilteredto){
     makepaintfilter(timefilteredto, 'heatmap', 24)
   );
   map.setPaintProperty(
-    'border',
-    'line-opacity',
-     makeborderfilter(timefilteredto)
+    'wall-poly',
+    'fill-extrusion-height',
+     bordergrow(timefilteredto)
   );
   map.setPaintProperty(
     'bpstation',
@@ -201,6 +226,10 @@ map.on('load', function () {
     type: 'geojson',
     data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BorderPatrol.geojson"
   });
+  map.addSource('borderwallpoly', {
+    type: 'geojson',
+    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/wall-poly.geojson"
+  });
 
   map.addLayer({
 		'id': 'arizonaroads',
@@ -208,20 +237,15 @@ map.on('load', function () {
 		'type': 'line','paint': {'line-width' : 1, 'line-opacity':0.7, 'line-color':"#8bb259"}
 	});
 
-  map.addLayer({
+/*  map.addLayer({
 		'id': 'border',
     'source': 'borderwall',
 		'type': 'line',
     'paint': {
       'line-width' : ["case", ["in",'vehicle',["get","gen_type"]],5,["in",'pedestrian',["get","gen_type"]],10,0],
-      //'line-opacity':1,
-      //'line-color':'red',
-      //'line-opacity':['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]],0.5,0.1]
-      //'line-pattern':'vehicularwall'
-      //'line-dasharray': [2, 1],
       'line-color':["case", ["in",'vehicle',["get","gen_type"]],'#B34529',["in",'pedestrian',["get","gen_type"]],'#661F0D','black']
     }
-	});
+	}); */
 
   map.addLayer({
     'id': 'bpstation',
@@ -239,6 +263,18 @@ map.on('load', function () {
     'icon-opacity',
      makeBPSfilter(timefilteredto)
   );
+  map.addLayer({
+    'id': 'wall-poly',
+    'source': 'borderwallpoly',
+    'type': 'fill-extrusion',
+    'paint': {
+      'fill-extrusion-base':0,
+      'fill-extrusion-height':5000,
+      //'fill-extrusion-opacity':1,
+      'fill-extrusion-color':["case", ["in",'vehicle',["get","gen_type"]],'#B34529',["in",'pedestrian',["get","gen_type"]],'#661F0D','black'],
+
+    }
+  });
 
 let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
   map.addLayer({
