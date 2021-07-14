@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+    <head>
+    	<!-- leaflet dependencies -->
+      <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css" rel="stylesheet">
+      <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.js"></script>
+   		<!-- slider dependencies -->
+   		<link href="https://refreshless.com/nouislider/distribute/nouislider.css?v=1410" rel="stylesheet">
+    	<script src="https://refreshless.com/nouislider/distribute/nouislider.js?v=1410"></script>
+		  <!-- Pop up dependencies-->
+	    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+      <link rel="stylesheet" href="style.css"/>
+      <title>Flickr Map</title>
+	   </head>
+	    <body>
+    		<style>
+        .c-5-color { background: #fdf9f2; }
+        .c-4-color { background: #e5c5f5; }
+        .c-3-color { background: #cd91f7; }
+        .c-2-color { background: #b965f9; }
+    		.c-1-color { background: #a131fc; }
+        .noUi-connects {opacity:0.3}
+        .noUi-target {background:rgba(0,0,0,0); backdrop-filter:blur(3px)}
+    		</style>
+        <div class='welcome' id='welcome'>
+          <div class='welcomeblur' id='welcomeblur'>
+            <div class='welcometext'id='welcometext'>
+              <center><h1>Flickr Photo Density Map</h1></center>
+              <h3> Using Flickr’s API, I counted every instance of a <sb>geotagged photo</sb> for each city and mapped them using a <sb>dynamic hex-grid choropleth map</sb>. Using the bottom slider or the legend’s inputs, you can <sb>change the classification</sb> of the data, allowing you to see local variation that would be otherwise invisible in a small-scale (i.e. zoomed out) map. <sb>Clicking on any location</sb> will show you some photos taken there, as well as a link to Google Street View. Have fun!</h3>
+              <div style="float:right;"><button id='exitbutton' class='exitbutton' >EXIT</button></div>
+              <script>document.getElementById('exitbutton').addEventListener('click',function(){document.getElementById('welcome').style.display = 'none'})</script>
+            </div>
+          </div>
+        </div>
+        <div id = 'legendmodule'>
+          <div class='buttonarray' style='z-index: 10000'><center><h2 style="color: #a131fc"> Go to...</h2></center>
+            <div class = 'buttonarray-blur'>
+              <button id="flyNYC" class='flybutton'>Manhattan</button>
+              <button id="flyTokyo" class='flybutton'>Tokyo</button>
+            </div>
+          </div>
+    		<div style="z-index: 10001" class = "legendslider">
+                <div class="slider" id="slider-color" ></div>
+            </div>
+    		<div class = "leghex" style="z-index: 10000">
+    		<div id="hex1" class="hexagon-wrapper">
+    		    <div class="hexagon c-1-color"></div>
+    		</div> <br>
+    		<div id="hex1" class="hexagon-wrapper">
+    		    <div class="hexagon c-2-color"></div>
+    		</div> <br>
+    		<div id="hex1" class="hexagon-wrapper">
+    		    <div class="hexagon c-3-color"></div>
+    		</div> <br>
+    		<div id="hex1" class="hexagon-wrapper">
+    		    <div class="hexagon c-4-color"></div>
+    		</div> <br>
+    		<div id="hex1" class="hexagon-wrapper">
+    		    <div class="hexagon c-5-color"></div>
+    		</div>
+    		</div>
+
+      		<div class ="legnum" style="z-index: 10000">
+      					<div class = "normaltext"> Number of Pictures<br>Taken in Each Hex</div>
+      			        <div class = "leginputs"><input type="text" id="input4" style="font-weight:400;"></div><div id='maxinput' class = "leginputs normaltext"></div><br>
+      		            <div class = "leginputs"><input type="text" id="input3" style="font-weight:400;"></div><div id="dyninput4" class = "leginputs normaltext"></div><br>
+      		            <div class = "leginputs"><input type="text" id="input2" style="font-weight:400;"></div><div id="dyninput3" class = "leginputs normaltext"></div><br>
+      		            <div class = "leginputs"><input type="text" id="input1" style="font-weight:400;"></div><div id="dyninput2" class = "leginputs normaltext"></div><br>
+      		            <div class = "leginputs normaltext" style="margin-left: 8px">0</div><div style="margin-left: 45px"id="dyninput1" class = "leginputs normaltext"></div><br>
+      		</div>
+
+		    <div class="legendblur" style="z-index: 9999"></div>
+        </div>
+        <div id="mapid"></div>
+        <script src='test.js'></script>
+	</body>
+</html>

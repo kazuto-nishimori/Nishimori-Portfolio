@@ -1,0 +1,326 @@
+
+		html, body, #mapid {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+						color:#360c59;
+        }
+        #hex1 {
+		  width: 20px;
+		  height: 20px;
+		}
+
+		@font-face {
+		  font-family: 'Open Sans';
+		  font-style: normal;
+		  font-weight: 300;
+		  src: local('Open Sans Light'), local('OpenSans-Light'), url(https://fonts.gstatic.com/s/opensans/v13/DXI1ORHCpsQm3Vp6mXoaTXhCUOGz7vYGh680lGh-uXM.woff) format('woff');
+		}
+		@font-face {
+		  font-family: 'Open Sans';
+		  font-style: normal;
+		  font-weight: 400;
+		  src: local('Open Sans'), local('OpenSans'), url(https://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3T8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
+		}
+		@font-face {
+		  font-family: 'Open Sans';
+		  font-style: normal;
+		  font-weight: 600;
+		  src: local('Open Sans Semibold'), local('OpenSans-Semibold'), url(https://fonts.gstatic.com/s/opensans/v13/MTP_ySUJH_bn48VBG8sNSnhCUOGz7vYGh680lGh-uXM.woff) format('woff');
+		}
+    .legendslider {
+      width: 98%;
+      padding: 20px;
+      margin: 0;
+      position: fixed;
+  		bottom: 10px;
+    }
+
+    .legend {
+      width: 10%;
+      padding: 10px;
+      margin: 0;
+      position: fixed;
+  		left: 0;
+    }
+
+		.hexagon-wrapper {
+		  text-align: center;
+		  margin: 5px;
+		  position: relative;
+		  display: inline-block;
+		}
+
+		.leginputs{
+		  text-align: center;
+		  margin: 5px;
+		  position: relative;
+		  display: inline-block;
+		}
+
+		.hexagon {
+		  height: 100%;
+		  width: calc(100% * 0.57735);
+		  display: inline-block;
+      opacity:0.3
+		}
+		.hexagon:before {
+		  position: absolute;
+		  top: 0;
+		  right: calc((100% / 2) - ((100% * 0.57735) / 2));
+		  background-color: inherit;
+		  height: inherit;
+		  width: inherit;
+		  content: '';
+		  transform: rotateZ(60deg);
+		}
+
+		.hexagon:after {
+		  position: absolute;
+		  top: 0;
+		  right: calc((100% / 2) - ((100% * 0.57735) / 2));
+		  background-color: inherit;
+		  height: inherit;
+		  width: inherit;
+		  content: '';
+		  transform: rotateZ(-60deg);
+		}
+
+
+		.normaltext{
+			font-family: 'Open Sans';
+			font-weight: 400;
+			font-size:12px;
+			margin-left: 0px;
+		}
+
+		input[type="text"]
+		{
+			font-family: 'Open Sans';
+			font-weight: 300;
+			font-size:12px;
+			width:50px;
+		}
+
+	.welcome{
+		position:fixed;
+		width:100%;
+		height:100%;
+		display: flex;
+  	justify-content: center;
+		align-items:center;
+		z-index:20000;
+
+	}
+	.welcomeblur{
+		width:70%;
+		height:70%;
+		backdrop-filter:blur(7px);
+		box-shadow:
+			0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+			0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+			0 12.5px 10px rgba(0, 0, 0, 0.06),
+			0 22.3px 17.9px rgba(0, 0, 0, 0.072),
+			0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+			0 100px 80px rgba(0, 0, 0, 0.12)
+
+	}
+	.welcometext{
+		margin:50px;
+	}
+	.exitbutton{
+		width:150px;
+		text-align:center;
+		background:none;
+		font-family: 'Open Sans';
+		font-weight: 300;
+		font-size:30px;
+		border: 2px solid black;
+		border-color:#360c59;
+		color:#360c59;
+	}
+		.buttonarray{
+			position:fixed;
+			right:20px;
+			top:20px;
+			width:125px;
+		}
+		.buttonarray-blur{
+			backdrop-filter:blur(5px);
+		}
+
+		.flybutton{
+			width:100%;
+			height:40px;
+			background:#a131fc;
+			border:none;
+			font-size:20;
+			font-family: 'Open Sans';
+			font-weight: 600;
+			color:#fff;
+			text-align:center;
+			opacity:0.4;
+
+
+		}
+		.leghex{
+		    padding: 10px;
+		    margin: 0;
+		    position: fixed;
+		  	right: 10px;
+		  	bottom: 20px;
+		  	padding-bottom: 48px;
+		  	padding-right: 120px;
+		}
+
+		.legnum{
+
+			padding: 10px;
+		    margin: 0;
+		    position: fixed;
+		  	right: 10px;
+		  	bottom: 20px;
+		  	padding-bottom: 50px;
+		}
+
+		.legendblur{
+			width:155px;
+			height:160px;
+		    position: fixed;
+		  	right: 10px;
+		  	bottom: 60px;
+		  	padding-bottom: 50px;
+			backdrop-filter: blur(5px);
+			box-shadow:
+  			0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+  			0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+  			0 12.5px 10px rgba(0, 0, 0, 0.06),
+  			0 22.3px 17.9px rgba(0, 0, 0, 0.072),
+  			0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+  			0 100px 80px rgba(0, 0, 0, 0.12)
+;
+		}
+
+
+
+		.mapboxgl-popup-tip {
+			opacity: 30%;
+		}
+		.popup {
+
+	       height: 400px;
+	       width: 500px;
+	       overflow: scroll;
+	       opacity:100%;
+
+
+
+	    }
+      .mapboxgl-popup-content {
+  	    	background:rgba(255,255,255,0.3);
+
+  	    }
+      .mapboxgl-popup{
+      	   backdrop-filter: blur(5px);
+					 z-index:20000;
+      }
+			.mapboxgl-popup-close-button{
+				font-size: 20px;
+
+			}
+			.changeradbutton{
+				text-align:center;
+				background:none;
+				font-family: 'Open Sans';
+				font-weight: 300;
+				font-size:14px;
+				border: 1px solid black;
+				border-color:#360c59;
+				color:#360c59;
+			}
+
+
+
+
+	    img {
+
+	      width: 500px;
+
+	      object-fit: cover;
+	    }
+
+	    p {
+			font-family: 'Open Sans';
+			font-weight: 300;
+	    }
+
+	    #mapBox
+	    {
+	     flex:5;
+	     position:relative;
+	     border:1px solid red;
+	    }
+
+
+		h1 {
+			font-family: 'Open Sans';
+			font-weight: 400;
+		  font-size: 40px;
+		  background: darken($color, 4%);
+		}
+
+		h2 {
+		  font-family: 'Open Sans';
+			font-weight: 400;
+		  font-size: 14px;
+		  background: darken($color, 4%);
+		}
+		h3 {
+		  font-family: 'Open Sans';
+		  font-size: 24px;
+			font-weight: 300;
+		  background: darken($color, 4%);
+			line-height:40px;
+		}
+		sb {
+			font-weight: 400;
+		}
+
+
+#imageLegend{
+  background: none;
+}
+#imageLegend svg{
+  height: 80%;
+  width: 80%;
+  fill: white;
+}
+#imageLegend svg polygon{
+  cursor: pointer;
+  fill: white;
+}
+.imgLegendWrap {
+  position: absolute;
+  top:0px;
+  right:0px;
+  margin-right: -50px;
+  display: inline-block; /* <= shrinks container to image size */
+
+}
+.checklist{
+  border: 0;
+      clip: rect(0 0 0 0);
+      height: 1px; margin: -1px;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+      width: 1px;
+}
+
+:root {
+  --imglgndColorCH: #0C0CD7;
+  --imglgndColorUNCH: gray;
+  --imglgndOpacityCH: 0.7;
+  --imglgndOpacityUNCH: 0.3;
+}
