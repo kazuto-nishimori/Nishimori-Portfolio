@@ -243,10 +243,10 @@ if (error) throw error;
 if (!map.hasImage('BPS')) map.addImage('BPS', image);
 });
 
-var opacity
+
 function fadein(elementid){
+  let opacity = 0.1
   document.getElementById(elementid).style.display='inline'
-  opacity = 0.1
   var opacityup = setInterval(function(){
     document.getElementById(elementid).style.opacity=opacity
     opacity ==1 ? clearInterval(opacityup) : opacity+= 0.1
