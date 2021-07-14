@@ -1,410 +1,357 @@
-//Code by Kazuto Nishimori, 2021
-//inquire at kazuto.nishimori@gmail.com
-//some code borrowed from https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
-
-//var monthmin = 2000*12; //date in numeric form, converted to number of months after year 0
-//var monthmax = 2020*12+5;
-//var mySlider = document.getElementById('slider');
-//mySlider.min = monthmin;
-//mySlider.value = monthmin;
-//mySlider.max = monthmax;
-var timefilteredto = monthmin; //the date (numeric) upto which the data is filtered
-document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('YYYY MMM');
-
-var initseqdone = new Boolean("false")
-mySlider.style.display = 'none'
-const datecolumn = "Reporting Date"
-
-const vehiclularheight = 1000
-const pedestrianheight = 5000
-const vehicularcolor = '#D17058'
-const pedestriancolor = '#D14926'
-const wallopacity = 0.7
+var class1 = 2;
+var class2 = 7;
+var class3 = 57;
+var class4 = 706;
+var maxpic = 31271;
+const maplat = 35.6672814;
+const maplon = 139.7065616;
+var slider = document.getElementById('slider-color');
+var input1 = document.getElementById('input1');
+var input2 = document.getElementById('input2');
+var input3 = document.getElementById('input3');
+var input4 = document.getElementById('input4');
+var inputs = [input1,input2,input3,input4];
+var classif = [class1,class2,class3,class4];
+var flying = new Boolean
+document.getElementById("maxinput").innerHTML = " - " + maxpic.toString();
 
 
+noUiSlider.create(slider, {
+    start: [Math.log(class1), Math.log(class2), Math.log(class3), Math.log(class4)],
+    connect: [true, true, true, true, true],
+    range: {
+        'min': [0],
+        'max': [Math.log(maxpic)],
+    }
+});
 
 
-//########## Utility functions ##########
-// convert numeric date to the form "1980-02"
-function retrievedate(months){
-  let mon = 1+(months)%12;
-  let year = (months-mon+1)/12;
-  return year.toString()+'-'+mon.toString().padStart(2,'0');
-};
-// a quadratic decay function from (0,yint) to (xint,0). Returns y
-function decayfunc(xint,yint,x){
-  return yint*(1-Math.pow((x/xint),2))
-};
-// lin function from (0,yint) to (xint,0). Returns y
-function linfunc(xint,yint,x){
-  return (-yint/xint)*x + yint
-};
+slider.noUiSlider.on('update', function (values, handle) {
+    inputs[handle].value = Math.round(Math.exp(values[handle]));
+    classif[handle] = Math.round(Math.exp(values[handle]));
+});
+
+var connect = slider.querySelectorAll('.noUi-connect');
+var classes = ['c-5-color', 'c-4-color', 'c-3-color', 'c-2-color', 'c-1-color'];
 
 
-//########## Filter functions ##########
-// returns JSON filter all data on or before 'timefilteredto'
-function makefilter(timefilteredto){
-  var filter = ['any'];
-  let month = timefilteredto%12
-  let year = (timefilteredto-month)/12;                // e.g. if filter is filtering up to Feb, 1983, then
-  for(var i = monthmin/12; i <  year; i++) {           // all previous years selected e.g. "1980","1981","1982"
-      var filtercondition = ["in",i.toString(),['get', datecolumn]]
-      filter.push(filtercondition);
-  };
-  for(var i = year*12; i <= timefilteredto; i++) {     // months of the last year selected e.g. "1983-01", "1983-02"
-      var filtercondition = ["in",retrievedate(i),['get', datecolumn]]
-      filter.push(filtercondition);
-  };
-  return filter
-};
-//returns JSON filter for data found within 'duration'time from 'timefilteredto'
-function makedurationfilter(timefilteredto, duration){
-  var filter = ['any'];
-  for (var i = 0; i < duration; i++){
-    var filtercondition = ["in",retrievedate(timefilteredto - i ),['get', "Reporting Date"]]
-    filter.push(filtercondition)
+for (var i = 0; i < connect.length; i++) {
+    connect[i].classList.add(classes[i]);
+}
+
+inputs.forEach(function (input, handle) {
+				    input.addEventListener('change', function () {
+				    	var valuebefore = this.value;
+				        slider.noUiSlider.setHandle(handle, Math.log(this.value));
+				        this.value = valuebefore;
+				        classif[handle] = parseInt(this.value);
+				    });
+});
+
+function fadein(elementid){
+  let opacity = 0.1
+  document.getElementById(elementid).style.display='inline'
+  var opacityup = setInterval(function(){
+    document.getElementById(elementid).style.opacity=opacity
+    opacity ==1 ? clearInterval(opacityup) : opacity+= 0.1
+  },50)
+}
+
+function updateMap(){
+  let filter = ['case']
+  for(i=0;i<=3;i++){
+    if(i != 3){
+      filter.push(['all',[">", ['get','pic'], classif[i]],["<=", ['get','pic'], classif[i+1]]])
+    }else{
+      filter.push([">", ['get','pic'], classif[i]])
+    }
+    filter.push(document.styleSheets[document.styleSheets.length - 1].cssRules[i].style.background)
   }
-  return filter
-};
-//Opacity filter for border file
-/*function makeborderfilter(timefilteredto){
-  var filter = ['case',["in",'legacy',["get","project"]],1,["!",["in",'legacy',["get","project"]]]]
-  filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1))
-  filter.push(0)
-  return filter
-};*/
-// Returns border wall height
-function bordergrow(timefilteredto){
-  var filter = ["case", ["in",'vehicle',["get","gen_type"]]]
-  filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1)*vehiclularheight)
-  filter.push(["in",'pedestrian',["get","gen_type"]])
-  filter.push(Math.min((Math.max(timefilteredto,2007*12)-2007*12)/12,1)*pedestrianheight)
-  filter.push(0)
-  return filter
-};
-// Filters Border Patrol Stations
-function makeBPSfilter(timefilteredto){
-  var filter = ['case',["in",'legacy',["get","Built"]],1]
-  const constructionyears = [2007,2009,2011,2012]
-  constructionyears.forEach(function (item, index) {
-    filter.push(["in",item.toString(),["get","Built"]])
-    filter.push(Math.min((Math.max(timefilteredto,(item-1)*12)-(item-1)*12)/12,1))
-  });
-  filter.push(0)
-  return filter
-};
-// returns JSON paint filter. Duration is for any decay, change
-function makepaintfilter(timefilteredto, option, duration){
-  let filter = ['case'];
-  if(option == 'opacity'){      //filter for opacity decay
-    for(var i = 0; i <  duration; i++) {
-      filter.push(["in",retrievedate(timefilteredto - i),['get',datecolumn]]);
-      filter.push(decayfunc(duration,1,i));
-    };
-    filter.push(1)
-  };
-  if(option == 'size'){         //filter for text size decay
-    for(var i = 0; i <  duration; i++) {
-      const radius = 15;
-      filter.push(["in",retrievedate(timefilteredto - i),['get',datecolumn]]);
-      filter.push(decayfunc(duration,radius,i))
-    };
-    filter.push(0)
-  };
-  if(option == 'radius'){         //filter for circle radius decay
-    let initialr = 8
-    let finalr = 2
-    for(var i = 0; i <  duration; i++) {
-      filter.push(["in",retrievedate(timefilteredto - i),['get',datecolumn]]);
-      filter.push(decayfunc(duration,initialr,i)+finalr)
-    };
-    filter.push(finalr)
-  };
-  if(option == 'color'){         //filter for color change from white to target color
-    var initr = 255
-    var initg = 0
-    var initb = 0
-    var targetr = 255
-    var targetg = 255
-    var targetb = 255
-    for(var i = 0; i <  (duration-1); i++) {
-      filter.push(["in",retrievedate((timefilteredto+1) - i),['get',datecolumn]]);
-      let r = Math.floor(initr + (targetr-initr)*(i/(duration-1)))
-      let g = Math.floor(initg + (targetg-initg)*(i/(duration-1)))
-      let b = Math.floor(initb + (targetb-initb)*(i/(duration-1)))
-      filter.push(("rgb(").concat(r.toString(),",",g.toString(),",", b.toString(), ")"))
-    };
-    filter.push(("rgb(").concat(targetr.toString(),",",targetg.toString(),",", targetb.toString(), ")"))
-  };
-  if(option == 'heatmap'){         //filter for circle radius decay
-    for(var i = 0; i <  duration; i++) {
-      filter.push(["in",retrievedate(timefilteredto - i),['get',datecolumn]]);
-      filter.push(linfunc(duration,1,i))
-    };
-    filter.push(0)
-    //console.log(1)
-  };
-  return filter
-};
-
-
-//########## Map Update Function ##########
-//Runs after every iteration of timefilteredto
-function updatemap(timefilteredto){
-  document.getElementById('date').innerText = moment(retrievedate(timefilteredto)).format('YYYY, MMM');
-  map.setFilter('death-circle',makefilter(timefilteredto));
-  map.setFilter('death-heatmap',makedurationfilter(timefilteredto, 24));
+  filter.push('white')
   map.setPaintProperty(
-    'death-circle',
-    'circle-radius',
-    makepaintfilter(timefilteredto, 'radius', 24)
-  );
-  // map.setPaintProperty('death-circle','circle-radius',makepaintfilter(timefilteredto, 'radius', 12));
-  map.setPaintProperty(
-    'death-heatmap',
-    'heatmap-weight',
-    makepaintfilter(timefilteredto, 'heatmap', 24)
-  );
-  if(timefilteredto>2007*12){
-    map.setLayoutProperty(
-      'newwalls',
-      'visibility',
-       'visible'
-    );
-  }else{
-    map.setLayoutProperty(
-      'newwalls',
-      'visibility',
-       'none'
-    );
-  }
-  map.setPaintProperty(
-    'newwalls',
-    'fill-extrusion-height',
-     bordergrow(timefilteredto)
+    'TokyoHex',
+    'fill-color',
+     filter
   );
   map.setPaintProperty(
-    'bpstation',
-    'icon-opacity',
-     makeBPSfilter(timefilteredto)
+    'TokyoHex',
+    'fill-opacity',
+     ['case',["<=", ['get','pic'], classif[0]],0,0.3]
   );
+  map.setPaintProperty(
+    'ManhHex',
+    'fill-color',
+     filter
+  );
+  map.setPaintProperty(
+    'ManhHex',
+    'fill-opacity',
+     ['case',["<=", ['get','pic'], classif[0]],0,0.3]
+  );
+  document.getElementById("dyninput1").innerHTML = " - " + classif[0].toString();
+  document.getElementById("dyninput2").innerHTML = " - " + classif[1].toString();
+  document.getElementById("dyninput3").innerHTML = " - " + classif[2].toString();
+  document.getElementById("dyninput4").innerHTML = " - " + classif[3].toString();
+  document.getElementById("maxinput").innerHTML = " - " + maxpic.toString();
 
 }
 
-
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2F6dXRvbiIsImEiOiJja3Bhd2RpMGQwdDE1MnFvMXJwbmhnMmoxIn0.elQ7_sz1l4YQk3KVYjJz9Q';
-
-
 var map = new mapboxgl.Map({
-container: 'map',
-zoom: 6.73,
-center: [-111.332,32.948,],
-pitch: 40,
-bearing: 0,
-style: 'mapbox://styles/kazuton/ckq0jillz0etp17o03c6k03d0'
+container: 'mapid',
+zoom: 14,
+center: [maplon,maplat],
+style: 'mapbox://styles/kazuton/ckr0wofx763sg17rvuxhhtlej',
 });
 
-//Border Patrol Station Icon
-map.loadImage('https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BPS3.png', function(error, image) {
-//map.loadImage('BPS.png', function(error, image) {
-if (error) throw error;
-if (!map.hasImage('BPS')) map.addImage('BPS', image);
-});
-
+var rad = 0.025; // edit 4
+var num = 20.0;
+var arr = ['<div class = "popup"><input autofocus style="display:none"><br>']
+var address
+var smallpopup=0
 
 map.on('load', function () {
-  map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
-	map.addSource('migrantdeaths', {
-		type: 'geojson',
-		// Use a URL for the value for the `data` property.
-		data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/arizona.geojson"
-	});
-  // Dot representing each victim
-	map.addLayer({
-		'id': 'death-circle',
-    'source': 'migrantdeaths',
-    'filter': ['all',['has', 'Post Mortem Interval'],['!',["in",'6-8 months',['get','Post Mortem Interval']]]],
-		'type': 'circle',
-    'paint': {
-      //'circle-radius' : {"stops": [[0, 0],[8, 0],[10, 2],[16, 5]]},
-      'circle-opacity':{"stops": [[0, 0],[10, 0],[11, 0.5],[13, 1]]},
-      'circle-color':"white"}
-    //'type':'symbol', 'layout': {'icon-image': 'pulsing-dot', 'icon-allow-overlap': true}
-    //, filter: ["in", "2020",['get', "Reporting Date"]]
-	});
-  map.addSource('roads', {
-		type: 'geojson',
-		// Use a URL for the value for the `data` property.
-		data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/roads.geojson"
-	});
-  map.addSource('borderwall', {
-    type: 'geojson',
-    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/Border.geojson"
-  });
-  map.addSource('borderpatrol', {
-    type: 'geojson',
-    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/BorderPatrol.geojson"
-  });
-  map.addSource('legacywall', {
-    type: 'geojson',
-    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/legacywalls.geojson"
-  });
-  map.addSource('newwall', {
-    type: 'geojson',
-    data: "https://kazuto-nishimori.github.io/Portfolio/Maps/Arizona-Migration/newwalls.geojson"
-  });
-
+  	map.addSource('Theatmap', {
+  		type: 'geojson',
+  		data: "Tokyoheatmap.geojson"
+  	});
+    map.addSource('NYheatmap', {
+  		type: 'geojson',
+  		data: "NYCheatmap.geojson"
+  	});
+  map.addSource('Thex',{
+    type:'vector',
+    url:'mapbox://kazuton.6qkj2a5d'
+  })
+  map.addSource('Mhex',{
+      type:'vector',
+      url:'mapbox://kazuton.2id79ucf'
+    })
   map.addLayer({
-		'id': 'arizonaroads',
-    'source': 'roads',
-		'type': 'line','paint': {'line-width' : 1, 'line-opacity':0.7, 'line-color':"#8bb259"}
-	});
-
-/*  map.addLayer({
-		'id': 'border',
-    'source': 'borderwall',
-		'type': 'line',
-    'paint': {
-      'line-width' : ["case", ["in",'vehicle',["get","gen_type"]],5,["in",'pedestrian',["get","gen_type"]],10,0],
-      'line-color':["case", ["in",'vehicle',["get","gen_type"]],'#B34529',["in",'pedestrian',["get","gen_type"]],'#661F0D','black']
-    }
-	}); */
-
-  map.addLayer({
-    'id': 'bpstation',
-    'source': 'borderpatrol',
-    'type': 'symbol',
-    'layout': {
-      'icon-image': 'BPS',
-      'icon-size': 0.03,
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true,
-    }
-  });
-  map.setPaintProperty(
-    'bpstation',
-    'icon-opacity',
-     makeBPSfilter(timefilteredto)
-  );
-
-  map.addLayer({
-    'id': 'newwalls',
-    'source': 'newwall',
-    'type': 'fill-extrusion',
-    'paint': {
-      'fill-extrusion-opacity':wallopacity,
-      'fill-extrusion-color':["case", ["in",'vehicle',["get","gen_type"]],vehicularcolor,["in",'pedestrian',["get","gen_type"]],pedestriancolor,'black'],
-    }
-  });
-  map.addLayer({
-    'id': 'legacywalls',
-    'source': 'legacywall',
-    'type': 'fill-extrusion',
-    'paint': {
-      'fill-extrusion-opacity':wallopacity,
-      'fill-extrusion-height': ["case", ["in",'vehicle',["get","gen_type"]],vehiclularheight,["in",'pedestrian',["get","gen_type"]],pedestrianheight,0],
-      'fill-extrusion-color': ["case", ["in",'vehicle',["get","gen_type"]],vehicularcolor,["in",'pedestrian',["get","gen_type"]],pedestriancolor,'black'],
-    }
-  });
-
-let labelfont = ['literal',['Open Sans Regular', 'Arial Unicode MS Regular']];
-  map.addLayer({
-		'id': 'Names of Victims',
-    'filter':['all',['has', 'Post Mortem Interval'],['!',["in",'6-8 months',['get','Post Mortem Interval']]]],
-    'source': 'migrantdeaths',
-		'type': 'symbol',
-    'layout': {
-      'text-field': "{NameAge}",
-      'text-font': labelfont,
-      'text-anchor':'bottom',
-      'text-allow-overlap': false,
-      "text-size": {"stops": [[0, 0],[8, 0],[11.99,0],[12, 10],[16, 20]]}},
-    'paint':{'text-color':'white','text-opacity':0.7}
-    //'type':'symbol', 'layout': {'icon-image': 'pulsing-dot', 'icon-allow-overlap': true}
-    //, filter: ["in", "2020",['get', "Reporting Date"]]
+		'id': 'TokyoHex',
+    'source': 'Thex',
+    'source-layer': 'FinalMergedTokyoHex-4v116p',
+		'type': 'fill',
+    'paint':{},
+    'minzoom': 13,
 	});
   map.addLayer({
-    'id': 'death-heatmap',
+		'id': 'ManhHex',
+    'source': 'Mhex',
+    'source-layer': 'FinalMergedNYCHex-c9np5a',
+		'type': 'fill',
+    'paint':{},
+    'minzoom': 14,
+	});
+  map.addLayer({
+    'id': 'TokyoHeat',
+    'source': 'Theatmap',
     'type': 'heatmap',
-    'source': 'migrantdeaths',
+    'maxzoom':13,
     'paint': {
-      //'heatmap-weight': 0.5,
-      // Increase the heatmap color weight weight by zoom level
-      // heatmap-intensity is a multiplier on top of heatmap-weight
-      //'heatmap-intensity': ['interpolate',['linear'],['zoom'],0,1,18,3],
-      // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-      // Begin color ramp at 0-stop with a 0-transparancy color
-      // to create a blur-like effect.
-      'heatmap-color': ['interpolate',['linear'],['heatmap-density'],
-        0,'rgba(0, 57, 115,0)',
-        0.1,'rgba(3, 85, 168,0.3)',
-        1,'rgba(229, 229, 190,1)'],
-      'heatmap-radius': {"base": 2,"stops": [[4,4],[13,1024]]},  // Adjust the heatmap radius by zoom level
-      'heatmap-opacity': ['interpolate',['linear'],['zoom'],7,1,13,0] // Transition from heatmap to circle layer by zoom level
-    }//map.setPaintProperty('death-heatmap','heatmap-radius',{"base": 2,"stops": [[4,2],[13,512]]})
+        // Increase the heatmap weight based on frequency and property magnitude
+        'heatmap-weight': ['interpolate',['linear'],['get', 'pics'],0,0,177218,1],
+        // Increase the heatmap color weight weight by zoom level
+        // heatmap-intensity is a multiplier on top of heatmap-weight
+        'heatmap-intensity': ['interpolate',['linear'],['zoom'],5,1,14,3],
+        // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+        // Begin color ramp at 0-stop with a 0-transparancy color
+        // to create a blur-like effect.
+        'heatmap-color': [
+        'interpolate',
+        ['linear'],
+        ['heatmap-density'],
+        0,'rgba(236,213,244,0)',
+        0.01,'rgba(236,213,244,1)',
+        0.2,'#d5a3f7',
+        0.4,'#c27af9',
+        0.6,'#b45cfa',
+        0.8,'#a943fb',
+        1,'#a131fc'
+        ],
+        // Adjust the heatmap radius by zoom level
+        'heatmap-radius': {"base": 2,"stops": [[7,4],[16,1024]]},
+        'heatmap-opacity':0.5
+      }
+  });
+  map.addLayer({
+    'id': 'NYCHeat',
+    'source': 'NYheatmap',
+    'type': 'heatmap',
+    'maxzoom':14,
+    'paint': {
+        // Increase the heatmap weight based on frequency and property magnitude
+        'heatmap-weight': ['interpolate',['linear'],['get', 'pics'],0,0,72036,1],
+        // Increase the heatmap color weight weight by zoom level
+        // heatmap-intensity is a multiplier on top of heatmap-weight
+        'heatmap-intensity': ['interpolate',['linear'],['zoom'],5,1,13,3],
+        // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+        // Begin color ramp at 0-stop with a 0-transparancy color
+        // to create a blur-like effect.
+        'heatmap-color': [
+        'interpolate',
+        ['linear'],
+        ['heatmap-density'],
+        0,'rgba(236,213,244,0)',
+        0.01,'rgba(236,213,244,1)',
+        0.2,'#d5a3f7',
+        0.4,'#c27af9',
+        0.6,'#b45cfa',
+        0.8,'#a943fb',
+        1,'#a131fc'
+        ],
+        // Adjust the heatmap radius by zoom level
+        'heatmap-radius': {"base": 2,"stops": [[9,4],[18,1024]]},
+        'heatmap-opacity':0.5
+      }
   });
 
-  map.setLayoutProperty('Names of Victims','visibility','none');
+  inputs.forEach(function (input, handle) {
+        input.addEventListener('change', updateMap)});
 
-    var initseqid = setInterval(function(){
-      var duration = 12
-      if(timefilteredto < monthmax){
-        timefilteredto += 1
-        updatemap(timefilteredto)
-      } else{
-        initseqdone = true
-        mySlider.style.display = 'block'
-        clearInterval(initseqid)
-        mySlider.noUiSlider.set(monthmax)
-        map.setLayoutProperty('Names of Victims','visibility','visible');
-      };
-    },10);
+  slider.noUiSlider.on('update', updateMap);
+})
+
+map.on("click", function(e){
+  if(flying==false){
+    function getAddress(other){
+    $.get('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+ e.lngLat.lat.toString(10) +'&lon='+e.lngLat.lng.toString(10), function(data){
+        address = data.address;
+    });
+    other(makeMarker);
+    }
+    // pulls the actual flickr data nearby the point
+    function doJson(other){
+    $.getJSON("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ca370d51a054836007519a00ff4ce59e&page&per_page="+num.toString(10)+"&format=json&nojsoncallback=1&privacy_filter=1& accuracy=16&lat="+e.lngLat.lat.toString(10)+"&lon="+e.lngLat.lng.toString(10)+"&radius="+rad.toString(10),function(json){
+        if(parseInt(json.photos.total)>0){
+
+        $.each(json.photos.photo,function(i,result){
+        picurl = "https://farm"+result.farm +".staticflickr.com/"+result.server +"/"+result.id+"_"+ result.secret+".jpg";
+        arr.push('<img src="'+picurl+'"/><br><p>'+result.title+'</p><br><br>');
+        })
+        arr.push("<center><h2>***</h2></center><h2>Displaying " +Math.min(num, json.photos.total).toString(10)+" out of the "+json.photos.total.toString(10)+" total photos found on Flickr within "+ rad.toString(10)*1000 +" meters</h2><center><button id='changeradbutton' class='changeradbutton'>Change Search Radius</button></center><p>Location: <a href='https://www.google.com/maps/@?api=1&map_action=pano&viewpoint="+e.lngLat.lat.toString(10)+"&comma;"+e.lngLat.lng.toString(10)+"&heading=-45&pitch=0&fov=80' target='_blank'>");
+        if(address){arr.push(address.road+"&comma; "+address.city+"&comma; "+address.country+"&comma; "+address.postcode+"</a></p>")}else{arr.push("Error loading address</a></p>")};
+        }
+        else{
+            arr.push('<p>No photograph is available to the public within a '+ rad.toString(10)*1000 +'m radius of this point</p></p>')
+            radiusinm = rad*1000
+            smallpopup = radiusinm.toString(10);
+        }
+        other();
+    })}
+    // makes the marker with all of the info passed in the getJson function
+    function makeMarker(){
+        arr.push("<div>");
+        console.log(arr)
+        var allpics = arr.toString();
+        allpics = allpics.replace(/,/g, "");
+        if(smallpopup != 0){
+          allpics = '<div style:"height:100px"><h2><center>No photograph found <br><br> within '
+          allpics = allpics.concat(smallpopup)
+          allpics = allpics.concat(' meters</center></h2><br><center><button id="changeradbutton" class="changeradbutton">Change Search Radius</button></center></div>')
+          let popup = new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(allpics).setMaxWidth("200px").addTo(map)
+          smallpopup = 0
+        }else{let popup = new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(allpics).setMaxWidth("700px").addTo(map)}
+        picurl = ""
+        arr = ['<div class = "popup"><input autofocus style="display:none;"><br>']
+        document.getElementById("changeradbutton").addEventListener('click', function () {
+        let prompt = window.prompt('Enter radius in meters')
+         rad = prompt != "" ? parseInt(prompt)*0.001 : rad
+        })
+
+    }
+    getAddress(doJson);
+  }
+})
+
+
+
+
+document.getElementById('flyTokyo').style.display = 'none'
+
+document.getElementById('flyNYC').addEventListener('click', function () {
+  map.fire('flystart');
+  map.flyTo({
+    center: [ -73.9919795,40.7274305281328],
+    zoom: 14.5,
+    speed: 1.5,
+    curve: 1,
+    easing(t) {
+    return t;
+  }})
+  class1 = 1;
+  class2 = 10;
+  class3 = 81;
+  class4 = 469;
+  maxpic = 22713;
+  document.getElementById('legendmodule').style.display = 'none'
+  document.getElementById('flyNYC').style.display = 'none'
+  document.getElementById('flyTokyo').style.display = 'block'
 });
 
-map.on('idle', function () {
-  if (initseqdone = true){
-    mySlider.noUiSlider.on('update', function (e) {
-      timefilteredto = parseInt(mySlider.noUiSlider.get())
-      updatemap(timefilteredto);
-      map.setFilter('Names of Victims',makefilter(timefilteredto));
-    });
-  }
+document.getElementById('flyTokyo').addEventListener('click', function () {
+  map.fire('flystart');
+  map.flyTo({
+    center: [139.7065616,35.6672814],
+    zoom: 14,
+    speed: 1.5,
+    curve: 1,
+    easing(t) {
+    return t;
+  }})
+  var class1 = 2;
+  var class2 = 7;
+  var class3 = 57;
+  var class4 = 706;
+  var maxpic = 31271;
+  document.getElementById('legendmodule').style.display = 'none'
+  document.getElementById('flyTokyo').style.display = 'none'
+  fadein('flyNYC')
+});
 
-  if (map.getLayer('Names of Victims') && map.getLayer('death-heatmap')) {
-  // Enumerate ids of the layers.
-    var toggleableLayerIds = ['Names of Victims','death-heatmap'];
-    // Set up the corresponding toggle button for each layer.
-    for (var i = 0; i < toggleableLayerIds.length; i++) {
-      var id = toggleableLayerIds[i];
-      if (!document.getElementById(id)) {
-      // Create a link.
-        var link = document.createElement('a');
-        link.id = id;
-        link.href = '#';
-        link.textContent = id;
-        link.className = 'active';
-        // Show or hide layer when the toggle is clicked.
-        link.onclick = function (e) {
-          var clickedLayer = this.textContent;
-          e.preventDefault();
-          e.stopPropagation();
-          var visibility = map.getLayoutProperty(
-          clickedLayer,
-          'visibility'
-          );
-          // Toggle layer visibility by changing the layout object's visibility property.
-          if (visibility === 'visible') {
-            map.setLayoutProperty(clickedLayer,'visibility','none');
-            this.className = '';
-          } else {
-            this.className = 'active';
-            map.setFilter(clickedLayer,makefilter(timefilteredto));
-            map.setLayoutProperty(clickedLayer,'visibility','visible');
-          }
-        };
-        var layers = document.getElementById('menu');
-        layers.appendChild(link);
-      }
+function moved(){
+  slider.noUiSlider.updateOptions({
+    start: [Math.log(class1), Math.log(class2), Math.log(class3), Math.log(class4)],
+    connect: [true, true, true, true, true],
+    range: {
+        'min': [0],
+        'max': [Math.log(maxpic)],
     }
-  }
+  })
+  updateMap()
+  fadein('legendmodule')
+}
+
+map.on('flystart', function(){
+    flying = true;
+    //console.log('flystart')
+    map.dragPan.disable();
+    map.scrollZoom.disable();
+    map.doubleClickZoom.disable();
+    map.boxZoom.disable();
+    map.dragRotate.disable();
+    map.dragPan.disable();
+    map.keyboard.disable();
+    map.touchPitch.disable();
+    map.touchZoomRotate.disable();
+});
+map.on('flyend', function(){
+    flying = false;
+    //console.log('flyend')
+    map.dragPan.enable();
+    map.scrollZoom.enable();
+    map.doubleClickZoom.enable();
+    map.boxZoom.enable();
+    map.dragRotate.enable();
+    map.dragPan.enable();
+    map.keyboard.enable();
+    map.touchPitch.enable();
+    map.touchZoomRotate.enable();
+});
+map.on('moveend', function(e){
+   if(flying){
+      moved()
+      //console.log('movedexec')
+      map.fire('flyend');
+   }
 });
