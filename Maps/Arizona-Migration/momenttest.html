@@ -8,7 +8,7 @@
 <script src="https://refreshless.com/nouislider/distribute/nouislider.js?v=1410"></script>
 </head>
 
-<body>
+<body onkeyup="console.log('yay')">
 <style>
 body{
   background-image:url("throwaway.png");
@@ -44,7 +44,64 @@ body{
 ;
 		}
 </style>
-<div class = "legendblur"></div>
+
+<link href="style.css" rel="stylesheet">
+<div id='info' style="display:none">
+  <div id='closebutton' class='closebutton'>x</div>
+  <div id='blurb' class='blurb' >
+    <div style="">
+      <div style="margin:10px">
+        <h2>Notes:</h2>
+        &nbsp &nbsp &nbspIt is important to note that most deaths at the border are never found and reported, especially those in remote, hazardous areas. Thus, the migrants who were forced down the most treacherous routes are underrepresented in this map. Furthermore, there are notable sources of uncertainty in this data set:
+        <br>&nbsp &nbsp &nbspThe map shows the reporting date rather than the date of death. Data with an estimated “post-mortem interval” greater than 3 months (or none reported) were filtered out. The location of death can have a margin of error of up to a few miles, however this has been substantially reduced in the past two decades with GPS technology.
+        <br>&nbsp &nbsp &nbspConstruction dates for border walls are approximate as many details on these <i>Border Tactical Infrastructures</i> are not made accessible to the public by the CBP.
+        <br><h2>Data Sources:</h2>
+        <a href='https://www.cbp.gov/border-security'>List of border patrol station locations</a><br>
+        <a href='https://github.com/cirlabs/border_fence_map'> Pre-2016 border wall shapefiles</a><br>
+        <a href='https://www.cbp.gov/border-security/along-us-borders/border-wall-system'>Trump wall map</a><br>
+        <a href='https://humaneborders.info/'>Arizona migrant death data</a><br>
+        <a href='https://repository.arizona.edu/'>Arizona roads</a><br>
+        <a href='https://www.mapbox.com/mapbox-studio'>Base map data</a><br>
+        <h2>Cartography:</h2>
+        &nbsp &nbsp &nbsp The heatmap layer combines deaths from the previous 24 months and weighs them on a linear scale. This isn't a problem for the start date of the map (Jan 2000) since the temporal range of the dataset is far greater than the extent shown on this map.
+        <br>&nbsp &nbsp &nbspThe Ajo station is shown to have been built in 2012. This is not strictly true, as it has existed since 1987 but at a limited capacity of 25 personnel. It was only after the completion of the new facility in 2012 and 500 new staff that the station became what it is today. This is why I made the decision to place it on the map after 2012. Yuma facility also underwent a major renovation in 2005 through 2007 with added fencing and tactical infrastructure, and it is shown to have been built in 2007.
+      </div>
+    </div>
+  </div>
+</div>
+<div id='infobutton'class='infobutton'>
+  <div class = 'infocircle'>i
+  </div>
+  <script>
+  document.getElementById('infobutton').addEventListener('click',function(){
+    document.getElementById('info').style.display = 'block';
+    document.getElementById('infobutton').style.display = 'none'})
+    document.getElementById('closebutton').addEventListener('click',function(){
+      document.getElementById('infobutton').style.display = 'block';
+      document.getElementById('info').style.display = 'none'})
+  </script>
+</div>
+
+<div id="legend" class="legend">
+    <div class="legendcontent">
+      <div class='legendline'>
+        <div class='legendimage'><img src='VW.png'></img></div>
+        <div class='legendtext'><p>Vehicle Wall (Pre 2016)</p></div>
+      </div><br>
+      <div class='legendline'>
+        <div class='legendimage'><img src='PW.png'></img></div>
+        <div class='legendtext'><p>Vehicle Wall (Pre 2016)</p></div>
+      </div><br>
+      <div class='legendline'>
+        <div class='legendimage'><img src='TW.png'></img></div>
+        <div class='legendtext'><p> Trump Wall</p></div>
+      </div><br>
+      <div class='legendline'>
+        <div class='legendimage'><img src='BP3.png'></img></div>
+        <div class='legendtext'><p> Border Patrol Station</p></div>
+      </div><br>
+    </div>
+</div>
 
 
 <div class='slidercontainter'>

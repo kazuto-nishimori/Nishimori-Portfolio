@@ -12,84 +12,81 @@
 <script src="https://refreshless.com/nouislider/distribute/nouislider.js?v=1410"></script>
 
 <script src="dep/moment.js"></script>
-<script src="pulsingdot.js"></script>
-<style>
-@font-face {
-  font-family: 'Open Sans';
-  font-style: normal;
-  font-weight: 300;
-  src: local('Open Sans Light'), local('OpenSans-Light'), url(https://fonts.gstatic.com/s/opensans/v13/DXI1ORHCpsQm3Vp6mXoaTXhCUOGz7vYGh680lGh-uXM.woff) format('woff');
-}
-.noUi-connect {background-color:#314685}
-.noUi-target {border:#ffffff}
-.noUi-value-large {color:white; font-family:'Open Sans'; font-size:24;line-height: 25px}
-.noUi-marker, .noUi-marker-horizontal, .noUi-marker-large{background-color:white}
+<link href="dep/style.css" rel="stylesheet">
 
-
-body { margin: 0; padding: 0; overflow: hidden;}
-h2{
-  color: #ffffff;
-  font-family: 'Open Sans';
-}
-
-#map { position: absolute; top: 0; bottom: 0; width: 100%; overflow: hidden; }
-.slidercontainter {position: absolute; bottom: 0; left: 0; height:100px; width: 100%; z-index:10000;justify-content: center; display: flex}
-.datediv {position: absolute; top: 0; left: 0; height:100px; z-index:10000}
-
-
-#menu {
-background: #fff;
-position: absolute;
-z-index: 1;
-top: 10px;
-right: 10px;
-border-radius: 3px;
-width: 120px;
-border: 1px solid rgba(0, 0, 0, 0.4);
-font-family: 'Open Sans', sans-serif;
-}
-
-#menu a {
-font-size: 13px;
-color: #404040;
-display: block;
-margin: 0;
-padding: 0;
-padding: 10px;
-text-decoration: none;
-border-bottom: 1px solid rgba(0, 0, 0, 0.25);
-text-align: center;
-}
-
-#menu a:last-child {
-border: none;
-}
-
-#menu a:hover {
-background-color: #f8f8f8;
-color: #404040;
-}
-
-#menu a.active {
-background-color: #3887be;
-color: #ffffff;
-}
-
-#menu a.active:hover {
-background: #3074a4;
-}
-</style>
 </head>
-<body>
-<div class='datediv'>
-<h2><label id='date'></label></h2></div>
+<body onkeyup="keypressed()">
+  <div id="legend" class="legend" style="display:none;opacity:0">
+      <div class="legendcontent">
+        <div class='legendline'>
+          <div class='legendimage'><img src='icons/VW.png'></img></div>
+          <div class='legendtext'><p>Vehicle Wall (Pre 2016)</p></div>
+        </div><br>
+        <div class='legendline'>
+          <div class='legendimage'><img src='icons/PW.png'></img></div>
+          <div class='legendtext'><p>Pedestrian Wall (Pre 2016)</p></div>
+        </div><br>
+        <div class='legendline'>
+          <div class='legendimage'><img src='icons/TW.png'></img></div>
+          <div class='legendtext'><p> Trump Wall</p></div>
+        </div><br>
+        <div class='legendline'>
+          <div class='legendimage'><img style="opacity:0.7" src='icons/BP.png'></img></div>
+          <div class='legendtext'><p> Border Patrol Station</p></div>
+        </div><br>
+      </div>
+  </div>
+  <div id='info' style="display:none">
+    <div id='closebutton' class='closebutton'>x</div>
+    <div id='blurb' class='blurb' >
+      <div style="">
+        <div style="margin:10px">
+          <h2>Notes:</h2>
+          &nbsp &nbsp &nbspIt is important to note that most deaths at the border are never found and reported, especially those in remote, hazardous areas. Thus, the migrants who were forced down the most treacherous routes are underrepresented in this map. Furthermore, there are notable sources of uncertainty in this data set:
+          <br>&nbsp &nbsp &nbspThe map shows the reporting date rather than the date of death. Data with an estimated “post-mortem interval” greater than 3 months (or none reported) were filtered out. The location of death can have a margin of error of up to a few miles, however this has been substantially reduced in the past two decades with GPS technology.
+          <br>&nbsp &nbsp &nbspConstruction dates for border walls are approximate as many details on these <i>Border Tactical Infrastructures</i> are not made accessible to the public by the CBP.
+          <br><h2>Data Sources:</h2>
+          <a href='https://www.cbp.gov/border-security'>List of border patrol station locations</a><br>
+          <a href='https://github.com/cirlabs/border_fence_map'> Pre-2016 border wall shapefiles</a><br>
+          <a href='https://www.cbp.gov/border-security/along-us-borders/border-wall-system'>Trump wall map</a><br>
+          <a href='https://humaneborders.info/'>Arizona migrant death data</a><br>
+          <a href='https://repository.arizona.edu/'>Arizona roads</a><br>
+          <a href='https://www.mapbox.com/mapbox-studio'>Base map data</a><br>
+          <h2>Cartography:</h2>
+          &nbsp &nbsp &nbsp The heatmap layer combines deaths from the previous 24 months and weighs them on a linear scale. This isn't a problem for the start date of the map (Jan 2000) since the temporal range of the dataset is far greater than the extent shown on this map.
+          <br>&nbsp &nbsp &nbspThe Ajo station is shown to have been built in 2012. This is not strictly true, as it has existed since 1987 but at a limited capacity of 25 personnel. It was only after the completion of the new facility in 2012 and 500 new staff that the station became what it is today. This is why I made the decision to place it on the map after 2012. Yuma facility also underwent a major renovation in 2005 through 2007 with added fencing and tactical infrastructure, and it is shown to have been built in 2007.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id='infobutton'class='infobutton' style="display:none; opacity:0">
+    <div class = 'infocircle'>i
+    </div>
+    <script>
+    document.getElementById('infobutton').addEventListener('click',function(){
+      document.getElementById('info').style.display = 'block';
+      document.getElementById('infobutton').style.display = 'none'})
+      document.getElementById('closebutton').addEventListener('click',function(){
+        document.getElementById('infobutton').style.display = 'block';
+        document.getElementById('info').style.display = 'none'})
+    </script>
+  </div>
 
-
-
+  <div class='welcome' id='welcome'>
+          <div class='welcomeblur' id='welcomeblur' style="display:none; opacity:0">
+            <div class='welcometext'id='welcometext'>
+              <center><h1>Death at the Arizona Border</h1></center>
+              <h3> &nbsp &nbsp &nbsp Every year, hundreds of migrants perish at the Southern border as they make their way across the scorching Sonoran desert. Deaths were rare before the Clinton administration, when the border was first militarized with the use of stadium lights, thermal sensors, check points, vehicle barriers and of course, walls. These efforts have been pushing migrants to increasingly dangerous paths, and even though border crossing has decreased significantly over the last two decades, the number of deaths has not. <br> <p "line-height:5px"></p>
+              &nbsp &nbsp &nbspThis animated map is intended to show the evolving geography of migrant deaths as new patrol stations and border walls are erected. Once the animation is over, a slider will appear that allows you to scroll through time. Zooming in will reveal each victim’s name, age, and location. </h3>
+              <div style="float:right; line-height:-5px;"><button id='exitbutton' class='exitbutton' >ENTER</button></div>
+              <script>document.getElementById('exitbutton').addEventListener('click',function(){document.getElementById('welcome').style.display = 'none'})</script>
+            </div>
+          </div>
+        </div>
+<div class='datediv' id='datediv' style="display:none"><h2><label id='date'></label></h2></div>
 <div class='slidercontainter'>
     <div id='slider' style="width:50%;" > </div>
 </div>
-<nav id="menu"></nav>
 <div id="map"></div>
 
 
@@ -99,7 +96,7 @@ background: #3074a4;
 var mySlider = document.getElementById('slider');
 
 var monthmin = 2000*12; //date in numeric form, converted to number of months after year 0
-var monthmax = 2020*12+5;
+var monthmax = 2021*12;
 
 function positions() {
     let filter = [0]
@@ -123,19 +120,17 @@ noUiSlider.create(mySlider, {
       values: positions(),
       density: 12/(monthmax-monthmin)*100,
       format: {
-      // 'to' the formatted value. Receives a number.
-      to: function (value) {
-          return value/12;
-      },
-      // 'from' the formatted value.
-      // Receives a string, should return a number.
-      from: function (value) {
-          return value*12;
-      },
+      to: function (value) {return value/12;},
+      from: function (value) {return value*12;},
     }
   }
 });
+function keypressed() {
+  if (event.keyCode === 27) {
+    event.preventDefault();
+    document.getElementById('closebutton').click();
+  }}
 </script>
-<script src="test.js"></script>
+<script src="dep/main.js"></script>
 </body>
 </html>

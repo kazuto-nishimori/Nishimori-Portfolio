@@ -9,3 +9,20 @@ var geojson = new L.GeoJSON.AJAX("https://kazuto-nishimori.github.io/Portfolio/M
          style:myStyle});
 
 geojson.addTo(mymap);
+
+
+map.on('load', function () {
+  map.addSource('landvalue', {
+    'type': 'geojson',
+    'data': 'https://kazuto-nishimori.github.io/Portfolio/Maps/Manhattan-Buildings/LandValue.geojson'
+    //'url': 'ManhBuildings.geojson'
+  });
+
+  map.addLayer({
+  'id': 'landvaluelayer',
+  'source': 'landvalue',
+  'type': 'fill',
+  "paint": {
+    "fill-color": "black"
+  }
+});
