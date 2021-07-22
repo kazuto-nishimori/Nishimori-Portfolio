@@ -88,6 +88,16 @@ function updateMap(){
     'fill-opacity',
      ['case',["<=", ['get','pic'], classif[0]],0,0.3]
   );
+  map.setPaintProperty(
+    'ParisHex',
+    'fill-color',
+     filter
+  );
+  map.setPaintProperty(
+    'ParisHex',
+    'fill-opacity',
+     ['case',["<=", ['get','pic'], classif[0]],0,0.3]
+  );
   document.getElementById("dyninput1").innerHTML = " - " + classif[0].toString();
   document.getElementById("dyninput2").innerHTML = " - " + classif[1].toString();
   document.getElementById("dyninput3").innerHTML = " - " + classif[2].toString();
