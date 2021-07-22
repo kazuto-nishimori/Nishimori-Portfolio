@@ -377,7 +377,7 @@ document.getElementById('flyParis').addEventListener('click', function () {
   var class2 = 7;
   var class3 = 57;
   var class4 = 706;
-  var maxpic = 31271;
+  var maxpic = 85538;
   document.getElementById('legendmodule').style.display = 'none'
   flybuttonhide('Paris')
 });
