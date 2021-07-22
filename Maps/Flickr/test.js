@@ -240,7 +240,7 @@ map.on('load', function () {
     'maxzoom':14,
     'paint': {
         // Increase the heatmap weight based on frequency and property magnitude
-        'heatmap-weight': ['interpolate',['linear'],['get', 'pics'],0,0,73066,1],
+        'heatmap-weight': ['interpolate',['linear'],['get', 'pic'],0,0,73066,1],
         // Increase the heatmap color weight weight by zoom level
         // heatmap-intensity is a multiplier on top of heatmap-weight
         'heatmap-intensity': ['interpolate',['linear'],['zoom'],5,1,13,3],
@@ -260,7 +260,7 @@ map.on('load', function () {
         1,'#a131fc'
         ],
         // Adjust the heatmap radius by zoom level
-        'heatmap-radius': {"base": 2,"stops": [[9,4],[18,1024]]},
+        'heatmap-radius': {"base": 2,"stops": [[8,4],[17,1024]]},
         'heatmap-opacity':0.5
       }
   });
