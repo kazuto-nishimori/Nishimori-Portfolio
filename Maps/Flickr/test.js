@@ -323,6 +323,7 @@ map.on("click", function(e){
   }
 })
 
+//Function to hide the fly button for the current location
 function flybuttonhide(place){
   document.getElementById('flyNYC').style.display = 'block'
   document.getElementById('flyTokyo').style.display = 'block'
@@ -332,9 +333,9 @@ function flybuttonhide(place){
   place == 'Tokyo' ? document.getElementById('flyTokyo').style.display = 'none' :
   console.log('error flybuttonhide() requires a valid place name')
 }
-
 flybuttonhide('Tokyo')
 
+//The following code is fired when a destination button is clicked
 document.getElementById('flyNYC').addEventListener('click', function () {
   map.fire('flystart');
   map.flyTo({
@@ -353,7 +354,6 @@ document.getElementById('flyNYC').addEventListener('click', function () {
   document.getElementById('legendmodule').style.display = 'none'
   flybuttonhide('NYC')
 });
-
 document.getElementById('flyTokyo').addEventListener('click', function () {
   map.fire('flystart');
   map.flyTo({
@@ -372,7 +372,6 @@ document.getElementById('flyTokyo').addEventListener('click', function () {
   document.getElementById('legendmodule').style.display = 'none'
   flybuttonhide('Tokyo')
 });
-
 document.getElementById('flyParis').addEventListener('click', function () {
   map.fire('flystart');
   map.flyTo({
@@ -392,6 +391,7 @@ document.getElementById('flyParis').addEventListener('click', function () {
   flybuttonhide('Paris')
 });
 
+//This function runs as soon as the flight is ended. The sliders are readjusted for the destination, map is updated, and legend is shown.
 function moved(){
   slider.noUiSlider.updateOptions({
     start: [Math.log(class1), Math.log(class2), Math.log(class3), Math.log(class4)],
@@ -404,7 +404,7 @@ function moved(){
   updateMap()
   fadein('legendmodule')
 }
-
+// During flight, all controls are locked
 map.on('flystart', function(){
     flying = true;
     //console.log('flystart')
@@ -418,6 +418,7 @@ map.on('flystart', function(){
     map.touchPitch.disable();
     map.touchZoomRotate.disable();
 });
+// When flight is ended they are unlocked
 map.on('flyend', function(){
     flying = false;
     //console.log('flyend')
@@ -431,6 +432,7 @@ map.on('flyend', function(){
     map.touchPitch.enable();
     map.touchZoomRotate.enable();
 });
+//When flight is over, a 'flyend' event is fired and moved() is run
 map.on('moveend', function(e){
    if(flying){
       moved()
