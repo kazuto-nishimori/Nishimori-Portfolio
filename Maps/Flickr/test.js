@@ -119,6 +119,10 @@ map.on('load', function () {
   		type: 'geojson',
   		data: "NYCheatmap.geojson"
   	});
+    map.addSource('Parisheatmap', {
+  		type: 'geojson',
+  		data: "Parisheatmap.geojson"
+  	});
   map.addSource('Thex',{
     type:'vector',
     url:'mapbox://kazuton.6qkj2a5d'
@@ -126,6 +130,10 @@ map.on('load', function () {
   map.addSource('Mhex',{
       type:'vector',
       url:'mapbox://kazuton.2id79ucf'
+    })
+  map.addSource('Phex',{
+        type:'vector',
+        url:'mapbox://kazuton.a3lj7eit'
     })
   map.addLayer({
 		'id': 'TokyoHex',
@@ -139,6 +147,14 @@ map.on('load', function () {
 		'id': 'ManhHex',
     'source': 'Mhex',
     'source-layer': 'FinalMergedNYCHex-c9np5a',
+		'type': 'fill',
+    'paint':{},
+    'minzoom': 14,
+	});
+  map.addLayer({
+		'id': 'ParisHex',
+    'source': 'Phex',
+    'source-layer': 'FinalMergedParisHex-cqo6fh',
 		'type': 'fill',
     'paint':{},
     'minzoom': 14,
@@ -182,6 +198,38 @@ map.on('load', function () {
     'paint': {
         // Increase the heatmap weight based on frequency and property magnitude
         'heatmap-weight': ['interpolate',['linear'],['get', 'pics'],0,0,72036,1],
+        // Increase the heatmap color weight weight by zoom level
+        // heatmap-intensity is a multiplier on top of heatmap-weight
+        'heatmap-intensity': ['interpolate',['linear'],['zoom'],5,1,13,3],
+        // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+        // Begin color ramp at 0-stop with a 0-transparancy color
+        // to create a blur-like effect.
+        'heatmap-color': [
+        'interpolate',
+        ['linear'],
+        ['heatmap-density'],
+        0,'rgba(236,213,244,0)',
+        0.01,'rgba(236,213,244,1)',
+        0.2,'#d5a3f7',
+        0.4,'#c27af9',
+        0.6,'#b45cfa',
+        0.8,'#a943fb',
+        1,'#a131fc'
+        ],
+        // Adjust the heatmap radius by zoom level
+        'heatmap-radius': {"base": 2,"stops": [[9,4],[18,1024]]},
+        'heatmap-opacity':0.5
+      }
+  });
+
+  map.addLayer({
+    'id': 'ParisHeat',
+    'source': 'Parisheatmap',
+    'type': 'heatmap',
+    'maxzoom':14,
+    'paint': {
+        // Increase the heatmap weight based on frequency and property magnitude
+        'heatmap-weight': ['interpolate',['linear'],['get', 'pics'],0,0,73066,1],
         // Increase the heatmap color weight weight by zoom level
         // heatmap-intensity is a multiplier on top of heatmap-weight
         'heatmap-intensity': ['interpolate',['linear'],['zoom'],5,1,13,3],
@@ -264,10 +312,17 @@ map.on("click", function(e){
   }
 })
 
+function flybuttonhide(place){
+  document.getElementById('flyNYC').style.display = 'block'
+  document.getElementById('flyTokyo').style.display = 'block'
+  document.getElementById('flyParis').style.display = 'block'
+  place == 'NYC' ? document.getElementById('flyNYC').style.display = 'none' :
+  place == 'Paris' ? document.getElementById('flyParis').style.display = 'none' :
+  place == 'Tokyo' ? document.getElementById('flyTokyo').style.display = 'none' :
+  console.log('error flybuttonhide() requires a valid place name')
+}
 
-
-
-document.getElementById('flyTokyo').style.display = 'none'
+flybuttonhide('Tokyo')
 
 document.getElementById('flyNYC').addEventListener('click', function () {
   map.fire('flystart');
@@ -285,8 +340,7 @@ document.getElementById('flyNYC').addEventListener('click', function () {
   class4 = 469;
   maxpic = 22713;
   document.getElementById('legendmodule').style.display = 'none'
-  document.getElementById('flyNYC').style.display = 'none'
-  document.getElementById('flyTokyo').style.display = 'block'
+  flybuttonhide('NYC')
 });
 
 document.getElementById('flyTokyo').addEventListener('click', function () {
@@ -305,8 +359,26 @@ document.getElementById('flyTokyo').addEventListener('click', function () {
   var class4 = 706;
   var maxpic = 31271;
   document.getElementById('legendmodule').style.display = 'none'
-  document.getElementById('flyTokyo').style.display = 'none'
-  fadein('flyNYC')
+  flybuttonhide('Tokyo')
+});
+
+document.getElementById('flyParis').addEventListener('click', function () {
+  map.fire('flystart');
+  map.flyTo({
+    center: [139.7065616,35.6672814],
+    zoom: 14,
+    speed: 1.5,
+    curve: 1,
+    easing(t) {
+    return t;
+  }})
+  var class1 = 2;
+  var class2 = 7;
+  var class3 = 57;
+  var class4 = 706;
+  var maxpic = 31271;
+  document.getElementById('legendmodule').style.display = 'none'
+  flybuttonhide('Paris')
 });
 
 function moved(){
