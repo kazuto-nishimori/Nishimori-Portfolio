@@ -112,7 +112,7 @@ container: 'mapid',
 zoom: 14,
 center: [maplon,maplat],
 style: 'mapbox://styles/kazuton/ckr0wofx763sg17rvuxhhtlej',
-hash:true,
+//hash:true,
 });
 
 var rad = 0.025; // edit 4
