@@ -366,7 +366,7 @@ document.getElementById('flyTokyo').addEventListener('click', function () {
 document.getElementById('flyParis').addEventListener('click', function () {
   map.fire('flystart');
   map.flyTo({
-    center: [139.7065616,35.6672814],
+    center: [2.3522,48.8566],
     zoom: 14,
     speed: 1.5,
     curve: 1,
