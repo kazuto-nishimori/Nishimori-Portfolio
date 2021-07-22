@@ -375,17 +375,17 @@ document.getElementById('flyTokyo').addEventListener('click', function () {
 document.getElementById('flyParis').addEventListener('click', function () {
   map.fire('flystart');
   map.flyTo({
-    center: [2.3522,48.8566],
-    zoom: 14,
+    center: [2.32878,48.86286],
+    zoom: 15.06,
     speed: 1.5,
     curve: 1,
     easing(t) {
     return t;
   }})
   var class1 = 2;
-  var class2 = 7;
-  var class3 = 57;
-  var class4 = 706;
+  var class2 = 21;
+  var class3 = 90;
+  var class4 = 388;
   var maxpic = 85538;
   document.getElementById('legendmodule').style.display = 'none'
   flybuttonhide('Paris')
